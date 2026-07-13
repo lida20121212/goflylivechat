@@ -56,6 +56,141 @@ var message = make(chan *Message, 10)
 var upgrader = websocket.Upgrader{}
 var Mux sync.RWMutex
 
+func getVisitor(visitorId string) (*User, bool) {
+	Mux.RLock()
+	defer Mux.RUnlock()
+	user, ok := ClientList[visitorId]
+	return user, ok && user != nil
+}
+
+func getKefu(kefuId string) (*User, bool) {
+	Mux.RLock()
+	defer Mux.RUnlock()
+	user, ok := KefuList[kefuId]
+	return user, ok && user != nil
+}
+
+func VisitorExists(visitorId string) bool {
+	_, ok := getVisitor(visitorId)
+	return ok
+}
+
+func IsKefuOnline(kefuId string) bool {
+	_, ok := getKefu(kefuId)
+	return ok
+}
+
+func VisitorCount() int {
+	Mux.RLock()
+	defer Mux.RUnlock()
+	return len(ClientList)
+}
+
+func TouchVisitor(visitorId string) {
+	user, ok := getVisitor(visitorId)
+	if ok {
+		user.UpdateTime = time.Now()
+	}
+}
+
+func VisitorSnapshot() map[string]*User {
+	Mux.RLock()
+	defer Mux.RUnlock()
+	users := make(map[string]*User, len(ClientList))
+	for id, user := range ClientList {
+		users[id] = user
+	}
+	return users
+}
+
+func kefuIDs() []string {
+	Mux.RLock()
+	defer Mux.RUnlock()
+	ids := make([]string, 0, len(KefuList))
+	for id := range KefuList {
+		ids = append(ids, id)
+	}
+	return ids
+}
+
+func setVisitor(user *User) *User {
+	Mux.Lock()
+	defer Mux.Unlock()
+	oldUser := ClientList[user.Id]
+	ClientList[user.Id] = user
+	return oldUser
+}
+
+func setKefu(user *User) *User {
+	Mux.Lock()
+	defer Mux.Unlock()
+	oldUser := KefuList[user.Id]
+	KefuList[user.Id] = user
+	return oldUser
+}
+
+func removeVisitorConn(conn *websocket.Conn) *User {
+	Mux.Lock()
+	defer Mux.Unlock()
+	for id, user := range ClientList {
+		if user != nil && user.Conn == conn {
+			delete(ClientList, id)
+			return user
+		}
+	}
+	return nil
+}
+
+func removeVisitorIfCurrent(user *User) bool {
+	if user == nil {
+		return false
+	}
+	Mux.Lock()
+	defer Mux.Unlock()
+	current := ClientList[user.Id]
+	if current != user {
+		return false
+	}
+	delete(ClientList, user.Id)
+	return true
+}
+
+func removeKefuConn(kefuId string, conn *websocket.Conn) bool {
+	Mux.Lock()
+	defer Mux.Unlock()
+	current := KefuList[kefuId]
+	if current == nil || current.Conn != conn {
+		return false
+	}
+	delete(KefuList, kefuId)
+	return true
+}
+
+func userByConn(conn *websocket.Conn) *User {
+	Mux.RLock()
+	defer Mux.RUnlock()
+	for _, user := range ClientList {
+		if user != nil && user.Conn == conn {
+			return user
+		}
+	}
+	for _, user := range KefuList {
+		if user != nil && user.Conn == conn {
+			return user
+		}
+	}
+	return nil
+}
+
+func writeConnMessage(conn *websocket.Conn, str []byte) error {
+	user := userByConn(conn)
+	if user != nil {
+		user.Mux.Lock()
+		defer user.Mux.Unlock()
+	}
+	return conn.WriteMessage(websocket.TextMessage, str)
+}
+
 func init() {
 	upgrader = websocket.Upgrader{
 		ReadBufferSize:  1024,
@@ -93,8 +228,7 @@ func UpdateVisitorStatusCron() {
 			if visitor.VisitorId == "" {
 				continue
 			}
-			_, ok := ClientList[visitor.VisitorId]
-			if !ok {
+			if !VisitorExists(visitor.VisitorId) {
 				models.UpdateVisitorStatus(visitor.VisitorId, 0)
 			}
 		}
@@ -123,9 +257,9 @@ func WsServerBackend() {
 				Type: "pong",
 			}
 			str, _ := json.Marshal(msg)
-			message.Mux.Lock()
-			defer message.Mux.Unlock()
-			conn.WriteMessage(websocket.TextMessage, str)
+			if err := writeConnMessage(conn, str); err != nil {
+				log.Println("write websocket pong failed:", err)
+			}
 		case "inputing":
 			data := typeMsg.Data.(map[string]interface{})
 			from := data["from"].(string)
@@ -139,7 +273,7 @@ func WsServerBackend() {
 	}
 }
 func UpdateVisitorUser(visitorId string, toId string) {
-	guest, ok := ClientList[visitorId]
+	guest, ok := getVisitor(visitorId)
 	if ok {
 		guest.To_id = toId
 	}

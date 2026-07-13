@@ -16,32 +16,33 @@ func NewKefuServer(c *gin.Context) {
 	if kefuInfo.ID == 0 {
 		c.JSON(200, gin.H{
 			"code": 400,
-			"msg":  "用户不存在",
+			"msg":  "user not found",
 		})
 		return
 	}
 
-	//go kefuServerBackend()
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		log.Print("upgrade:", err)
 		return
 	}
-	//获取GET参数,创建WS
-	var kefu User
-	kefu.Id = kefuInfo.Name
-	kefu.Name = kefuInfo.Nickname
-	kefu.Avator = kefuInfo.Avator
-	kefu.Conn = conn
-	AddKefuToList(&kefu)
+
+	kefu := &User{
+		Conn:   conn,
+		Name:   kefuInfo.Nickname,
+		Id:     kefuInfo.Name,
+		Avator: kefuInfo.Avator,
+	}
+	AddKefuToList(kefu)
+	defer func() {
+		removeKefuConn(kefu.Id, conn)
+		conn.Close()
+	}()
 
 	for {
-		//接受消息
-		var receive []byte
 		messageType, receive, err := conn.ReadMessage()
 		if err != nil {
-			log.Println("ws/user.go ", err)
-			conn.Close()
+			log.Println("read kefu websocket failed:", err)
 			return
 		}
 
@@ -53,33 +54,51 @@ func NewKefuServer(c *gin.Context) {
 		}
 	}
 }
+
 func AddKefuToList(kefu *User) {
-	oldUser, ok := KefuList[kefu.Id]
-	if oldUser != nil || ok {
-		msg := TypeMessage{
-			Type: "close",
-			Data: kefu.Id,
-		}
-		str, _ := json.Marshal(msg)
-		if err := oldUser.Conn.WriteMessage(websocket.TextMessage, str); err != nil {
-			oldUser.Conn.Close()
-		}
+	oldUser := setKefu(kefu)
+	if oldUser == nil || oldUser.Conn == nil || oldUser.Conn == kefu.Conn {
+		return
 	}
-	KefuList[kefu.Id] = kefu
+
+	msg := TypeMessage{
+		Type: "close",
+		Data: kefu.Id,
+	}
+	str, _ := json.Marshal(msg)
+	oldUser.Mux.Lock()
+	if err := oldUser.Conn.WriteMessage(websocket.TextMessage, str); err != nil {
+		log.Println("close old kefu websocket failed:", err)
+	}
+	oldUser.Mux.Unlock()
+	oldUser.Conn.Close()
 }
 
-// 给指定客服发消息
-func OneKefuMessage(toId string, str []byte) {
-	kefu, ok := KefuList[toId]
-	if ok {
-		log.Println("OneKefuMessage lock")
-		kefu.Mux.Lock()
-		defer kefu.Mux.Unlock()
-		log.Println("OneKefuMessage unlock")
-		error := kefu.Conn.WriteMessage(websocket.TextMessage, str)
-		tools.Logger().Println("send_kefu_message", error, string(str))
-	}
+func OneKefuMessage(toId string, str []byte) bool {
+	return writeKefuMessage(toId, str, true)
 }
+
+func writeKefuMessage(toId string, str []byte, logSend bool) bool {
+	kefu, ok := getKefu(toId)
+	if !ok || kefu.Conn == nil {
+		return false
+	}
+
+	kefu.Mux.Lock()
+	err := kefu.Conn.WriteMessage(websocket.TextMessage, str)
+	kefu.Mux.Unlock()
+	if logSend {
+		tools.Logger().Println("send_kefu_message", err, string(str))
+	}
+	if err != nil {
+		log.Println("send websocket message to kefu failed:", toId, err)
+		kefu.Conn.Close()
+		removeKefuConn(toId, kefu.Conn)
+		return false
+	}
+	return true
+}
+
 func KefuMessage(visitorId, content string, kefuInfo models.User) {
 	msg := TypeMessage{
 		Type: "message",
@@ -97,22 +116,12 @@ func KefuMessage(visitorId, content string, kefuInfo models.User) {
 	OneKefuMessage(kefuInfo.Name, str)
 }
 
-// 给客服客户端发送消息判断客户端是否在线
 func SendPingToKefuClient() {
 	msg := TypeMessage{
 		Type: "many pong",
 	}
 	str, _ := json.Marshal(msg)
-	for kefuId, kefu := range KefuList {
-		if kefu == nil {
-			continue
-		}
-		kefu.Mux.Lock()
-		defer kefu.Mux.Unlock()
-		err := kefu.Conn.WriteMessage(websocket.TextMessage, str)
-		if err != nil {
-			log.Println("定时发送ping给客服，失败", err.Error())
-			delete(KefuList, kefuId)
-		}
+	for _, kefuId := range kefuIDs() {
+		writeKefuMessage(kefuId, str, false)
 	}
 }

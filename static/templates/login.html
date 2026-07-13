@@ -163,7 +163,8 @@
                             type: 'success'
                         });
                         localStorage.setItem("token", response.result.token);
-                        window.location.href = "/main";
+                        var isMobile = /Android|iPhone|iPad|iPod|Mobile|Windows Phone/i.test(navigator.userAgent) || window.innerWidth <= 768;
+                        window.location.href = isMobile ? "/m/chat" : "/main";
                     } else {
                         this.$message({
                             message: response.message || 'Invalid credentials',

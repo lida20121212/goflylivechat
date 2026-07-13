@@ -1,0 +1,1486 @@
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+    <title>Mobile Agent - GOFLY</title>
+    <link rel="stylesheet" href="/static/cdn/element-ui/2.15.1/theme-chalk/index.min.css">
+    <script src="/static/cdn/vue/2.6.11/vue.min.js"></script>
+    <script src="/static/cdn/element-ui/2.15.1/index.js"></script>
+    <script src="/static/cdn/jquery/3.6.0/jquery.min.js"></script>
+    <script src="/static/js/functions.js"></script>
+    <script src="/static/js/reconnecting-websocket.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: #edf1f5;
+            color: #1f2933;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+        }
+        [v-cloak] {
+            display: none;
+        }
+        #app {
+            height: calc(var(--vh, 1vh) * 100);
+            min-height: 100%;
+            background: #edf1f5;
+        }
+        .mobile-shell {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .mobile-topbar {
+            min-height: 56px;
+            padding: calc(8px + env(safe-area-inset-top)) 12px 8px;
+            background: #0f3764;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        .topbar-main {
+            min-width: 0;
+            flex: 1;
+        }
+        .topbar-title {
+            font-size: 17px;
+            font-weight: 600;
+            line-height: 22px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+        .topbar-subtitle {
+            font-size: 12px;
+            opacity: .8;
+            line-height: 18px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+        .icon-action {
+            width: 36px;
+            height: 36px;
+            border: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,.12);
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .icon-action:active {
+            background: rgba(255,255,255,.22);
+        }
+        .list-page,
+        .chat-page {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .list-toolbar {
+            padding: 10px 12px;
+            background: #fff;
+            border-bottom: 1px solid #dfe5eb;
+            flex-shrink: 0;
+        }
+        .list-toolbar .el-radio-group {
+            width: 100%;
+            display: flex;
+        }
+        .list-toolbar .el-radio-button {
+            flex: 1;
+        }
+        .list-toolbar .el-radio-button__inner {
+            width: 100%;
+            padding: 10px 0;
+        }
+        .visitor-list {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: env(safe-area-inset-bottom);
+            background: #f7f9fb;
+        }
+        .visitor-item {
+            min-height: 70px;
+            padding: 12px;
+            background: #fff;
+            border-bottom: 1px solid #e7edf3;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .visitor-item.is-active {
+            background: #eef7ff;
+        }
+        .visitor-item.has-new {
+            border-left: 4px solid #e55252;
+            padding-left: 8px;
+        }
+        .visitor-main {
+            min-width: 0;
+            flex: 1;
+        }
+        .visitor-name-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+        }
+        .visitor-name {
+            font-size: 15px;
+            font-weight: 600;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+        .visitor-status {
+            font-size: 11px;
+            line-height: 16px;
+            padding: 0 6px;
+            border-radius: 999px;
+            color: #1d7d4d;
+            background: #e6f6ed;
+            flex-shrink: 0;
+        }
+        .visitor-status.offline {
+            color: #7b8794;
+            background: #edf1f5;
+        }
+        .visitor-last {
+            margin-top: 5px;
+            color: #66788a;
+            font-size: 13px;
+            line-height: 18px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+        .empty-state {
+            padding: 56px 24px;
+            text-align: center;
+            color: #8292a2;
+            font-size: 14px;
+        }
+        .chat-header {
+            min-height: 56px;
+            padding: calc(8px + env(safe-area-inset-top)) 10px 8px;
+            background: #0f3764;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .chat-title-wrap {
+            min-width: 0;
+            flex: 1;
+        }
+        .chat-title {
+            font-size: 16px;
+            font-weight: 600;
+            line-height: 22px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+        .chat-subtitle {
+            font-size: 12px;
+            line-height: 18px;
+            opacity: .82;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+        .message-list {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 12px 10px 16px;
+            background: #eef2f6;
+        }
+        .load-more {
+            text-align: center;
+            margin: 0 0 12px;
+        }
+        .load-more .el-button {
+            padding: 7px 14px;
+        }
+        .message-time {
+            text-align: center;
+            color: #8795a5;
+            font-size: 11px;
+            line-height: 20px;
+            margin: 8px 0;
+        }
+        .message-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+            align-items: flex-start;
+        }
+        .message-row.is-me {
+            justify-content: flex-end;
+        }
+        .message-row.is-me .message-bubble {
+            background: #d9ecff;
+            border-color: #c5def8;
+        }
+        .message-row.is-me .message-meta {
+            text-align: right;
+        }
+        .message-content {
+            max-width: calc(100vw - 96px);
+            min-width: 0;
+        }
+        .message-meta {
+            color: #768697;
+            font-size: 11px;
+            line-height: 17px;
+            margin-bottom: 2px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+        .message-bubble {
+            background: #fff;
+            border: 1px solid #e1e7ee;
+            border-radius: 8px;
+            padding: 8px 10px;
+            color: #17202a;
+            font-size: 14px;
+            line-height: 21px;
+            word-break: break-word;
+        }
+        .message-bubble img {
+            max-width: 180px;
+            height: auto;
+            border-radius: 6px;
+        }
+        .composer {
+            padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+            background: #fff;
+            border-top: 1px solid #dfe5eb;
+            flex-shrink: 0;
+        }
+        .composer-tools {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 7px;
+        }
+        .tool-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 1px solid #d8e0e8;
+            background: #f8fafc;
+            color: #526579;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .tool-fill {
+            flex: 1;
+        }
+        .composer-main {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+        }
+        .composer-main .el-textarea {
+            flex: 1;
+        }
+        .composer-main .el-textarea__inner {
+            resize: none;
+            border-radius: 8px;
+            font-size: 16px;
+            line-height: 22px;
+            padding: 8px 10px;
+        }
+        .send-btn {
+            min-width: 64px;
+            height: 40px;
+            flex-shrink: 0;
+        }
+        .file-input {
+            display: none;
+        }
+        .mobile-mask {
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            background: rgba(15, 23, 42, .42);
+        }
+        .bottom-panel {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 60;
+            max-height: 78%;
+            background: #fff;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        .panel-header {
+            min-height: 48px;
+            padding: 0 12px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #e5ebf1;
+        }
+        .panel-title {
+            flex: 1;
+            min-width: 0;
+            font-size: 16px;
+            font-weight: 600;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+        .panel-body {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 12px;
+        }
+        .info-row {
+            padding: 10px 0;
+            border-bottom: 1px solid #edf1f5;
+            display: flex;
+            gap: 10px;
+            font-size: 14px;
+            line-height: 20px;
+        }
+        .info-label {
+            width: 88px;
+            color: #738294;
+            flex-shrink: 0;
+        }
+        .info-value {
+            flex: 1;
+            min-width: 0;
+            word-break: break-word;
+        }
+        .reply-search {
+            margin-bottom: 10px;
+        }
+        .reply-group {
+            border: 1px solid #e5ebf1;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        .reply-group-title {
+            padding: 10px 12px;
+            background: #f6f8fb;
+            font-weight: 600;
+            font-size: 14px;
+            border-bottom: 1px solid #e5ebf1;
+        }
+        .reply-item {
+            padding: 10px 12px;
+            border-bottom: 1px solid #edf1f5;
+            font-size: 14px;
+            line-height: 20px;
+            word-break: break-word;
+        }
+        .reply-item:last-child {
+            border-bottom: 0;
+        }
+        .reply-item:active {
+            background: #eef7ff;
+        }
+        .transfer-list .el-button {
+            width: 100%;
+            margin: 0 0 8px;
+            text-align: left;
+        }
+        .panel-actions {
+            display: flex;
+            gap: 8px;
+            padding: 12px;
+            border-top: 1px solid #e5ebf1;
+            flex-shrink: 0;
+        }
+        .panel-actions .el-button {
+            flex: 1;
+            margin: 0;
+        }
+        @media (min-width: 720px) {
+            #app {
+                max-width: 520px;
+                margin: 0 auto;
+                box-shadow: 0 0 0 1px #d8e0e8;
+            }
+            .bottom-panel {
+                left: 50%;
+                right: auto;
+                width: 520px;
+                transform: translateX(-50%);
+            }
+        }
+    </style>
+</head>
+<body>
+<div id="app" v-cloak>
+    <div class="mobile-shell">
+        <section class="list-page" v-show="view === 'list'">
+            <header class="mobile-topbar">
+                <el-avatar :size="36" :src="kfConfig.avator"></el-avatar>
+                <div class="topbar-main">
+                    <div class="topbar-title">Mobile Agent</div>
+                    <div class="topbar-subtitle"><{kfConfig.displayName || kfConfig.name || 'Agent'}> - <{connectionLabel}></div>
+                </div>
+                <button class="icon-action" type="button" @click="refreshVisitors" title="Refresh">
+                    <i class="el-icon-refresh"></i>
+                </button>
+                <button class="icon-action" type="button" @click="logout" title="Logout">
+                    <i class="el-icon-switch-button"></i>
+                </button>
+            </header>
+
+            <div class="list-toolbar">
+                <el-radio-group v-model="listMode" size="small" @change="switchListMode">
+                    <el-radio-button label="online">Online</el-radio-button>
+                    <el-radio-button label="recent">Recent</el-radio-button>
+                </el-radio-group>
+            </div>
+
+            <main class="visitor-list">
+                <div
+                    class="visitor-item"
+                    v-for="item in activeVisitors"
+                    :key="visitorKey(item)"
+                    :class="{'is-active': visitorId(item) === currentGuest, 'has-new': item.hidden_new_message === false}"
+                    @click="talkTo(item)">
+                    <el-badge value="new" :hidden="item.hidden_new_message !== false">
+                        <el-avatar :size="44" :src="visitorAvatar(item)"></el-avatar>
+                    </el-badge>
+                    <div class="visitor-main">
+                        <div class="visitor-name-row">
+                            <div class="visitor-name"><{visitorName(item)}></div>
+                            <span class="visitor-status" :class="{'offline': !visitorOnline(item)}"><{visitorOnline(item) ? 'Online' : 'Offline'}></span>
+                        </div>
+                        <div class="visitor-last"><{item.last_message || 'No messages yet'}></div>
+                    </div>
+                    <i class="el-icon-arrow-right"></i>
+                </div>
+
+                <div class="empty-state" v-show="activeVisitors.length === 0">
+                    No visitors
+                </div>
+
+                <div style="padding: 12px;" v-show="listMode === 'recent' && visitorCount > visitorPageSize">
+                    <el-pagination
+                        small
+                        background
+                        layout="prev, pager, next"
+                        :current-page="visitorCurrentPage"
+                        :page-size="visitorPageSize"
+                        :total="visitorCount"
+                        @current-change="visitorPage">
+                    </el-pagination>
+                </div>
+            </main>
+        </section>
+
+        <section class="chat-page" v-show="view === 'chat'">
+            <header class="chat-header">
+                <button class="icon-action" type="button" @click="backToList" title="Back">
+                    <i class="el-icon-arrow-left"></i>
+                </button>
+                <div class="chat-title-wrap">
+                    <div class="chat-title"><{chatTitle || 'Visitor'}></div>
+                    <div class="chat-subtitle"><{connectionState === 'online' ? (chatInputing || visitor.status || 'Ready') : connectionLabel}></div>
+                </div>
+                <button class="icon-action" type="button" @click="infoPanel = true" title="Info">
+                    <i class="el-icon-user"></i>
+                </button>
+                <button class="icon-action" type="button" @click="replyPanel = true" title="Replies">
+                    <i class="el-icon-chat-dot-square"></i>
+                </button>
+            </header>
+
+            <main class="message-list" ref="messageList">
+                <div class="load-more" v-show="showLoadMore">
+                    <el-button size="mini" round @click="getHistoryMessage">Load more</el-button>
+                </div>
+
+                <div v-for="(msg, index) in msgList" :key="index">
+                    <div class="message-time"><{msg.time}></div>
+                    <div class="message-row" :class="{'is-me': msg.is_kefu}">
+                        <el-avatar v-if="!msg.is_kefu" :size="34" :src="msg.avator"></el-avatar>
+                        <div class="message-content">
+                            <div class="message-meta"><{msg.name}></div>
+                            <div class="message-bubble" v-html="msg.content"></div>
+                        </div>
+                        <el-avatar v-if="msg.is_kefu" :size="34" :src="msg.avator"></el-avatar>
+                    </div>
+                </div>
+
+                <div class="empty-state" v-show="currentGuest && msgList.length === 0">
+                    No messages
+                </div>
+            </main>
+
+            <footer class="composer">
+                <div class="composer-tools">
+                    <button class="tool-btn" type="button" @click="pickImage" title="Image">
+                        <i class="el-icon-picture"></i>
+                    </button>
+                    <button class="tool-btn" type="button" @click="pickFile" title="File">
+                        <i class="el-icon-upload"></i>
+                    </button>
+                    <button class="tool-btn" type="button" @click="replyPanel = true" title="Replies">
+                        <i class="el-icon-document-copy"></i>
+                    </button>
+                    <span class="tool-fill"></span>
+                    <button class="tool-btn" type="button" @click="transferPanel = true; loadOtherKefus()" title="Transfer">
+                        <i class="el-icon-position"></i>
+                    </button>
+                    <button class="tool-btn" type="button" @click="confirmCloseVisitor" title="End">
+                        <i class="el-icon-close"></i>
+                    </button>
+                </div>
+                <div class="composer-main">
+                    <el-input
+                        type="textarea"
+                        :autosize="{ minRows: 1, maxRows: 4 }"
+                        placeholder="Type a message"
+                        v-model="messageContent">
+                    </el-input>
+                    <el-button class="send-btn" type="primary" :disabled="sendDisabled || !currentGuest" @click="chatToUser">Send</el-button>
+                </div>
+                <input ref="imageInput" class="file-input" type="file" accept="image/gif,image/jpeg,image/jpg,image/png" @change="uploadImageSelected">
+                <input ref="fileInput" class="file-input" type="file" @change="uploadFileSelected">
+            </footer>
+        </section>
+    </div>
+
+    <div class="mobile-mask" v-show="infoPanel" @click="infoPanel = false"></div>
+    <aside class="bottom-panel" v-show="infoPanel">
+        <div class="panel-header">
+            <div class="panel-title">Visitor Info</div>
+            <el-button type="text" icon="el-icon-close" @click="infoPanel = false"></el-button>
+        </div>
+        <div class="panel-body">
+            <div class="info-row">
+                <div class="info-label">Name</div>
+                <div class="info-value"><{visitor.name || chatTitle || '-'}></div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">IP</div>
+                <div class="info-value"><{visitor.source_ip || '-'}></div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Location</div>
+                <div class="info-value"><{visitor.city || '-'}></div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">First Visit</div>
+                <div class="info-value"><{visitor.created_at || '-'}></div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Last Active</div>
+                <div class="info-value"><{visitor.updated_at || '-'}></div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Referrer</div>
+                <div class="info-value"><{visitor.refer || '-'}></div>
+            </div>
+            <div class="info-row" v-for="item in visitorExtra" :key="item.key">
+                <div class="info-label"><{item.key}></div>
+                <div class="info-value"><{item.val}></div>
+            </div>
+        </div>
+        <div class="panel-actions">
+            <el-button type="warning" plain @click="addIpblack(visitor.source_ip)">Blacklist</el-button>
+            <el-button @click="infoPanel = false">Done</el-button>
+        </div>
+    </aside>
+
+    <div class="mobile-mask" v-show="replyPanel" @click="replyPanel = false"></div>
+    <aside class="bottom-panel" v-show="replyPanel">
+        <div class="panel-header">
+            <div class="panel-title">Quick Replies</div>
+            <el-button type="text" icon="el-icon-close" @click="replyPanel = false"></el-button>
+        </div>
+        <div class="panel-body">
+            <el-input class="reply-search" size="small" placeholder="Search replies" v-model="replySearch" @keyup.enter.native="searchReply">
+                <el-button slot="append" icon="el-icon-search" @click="searchReply"></el-button>
+            </el-input>
+
+            <div class="reply-group" v-for="reply in visibleReplys" :key="reply.group_id">
+                <div class="reply-group-title"><{reply.group_name}></div>
+                <div class="reply-item" v-for="item in reply.items" :key="item.item_id" @click="useReply(item.item_content)">
+                    <{item.item_name || item.item_content}>
+                </div>
+            </div>
+
+            <div class="empty-state" v-show="visibleReplys.length === 0">
+                No replies
+            </div>
+        </div>
+    </aside>
+
+    <div class="mobile-mask" v-show="transferPanel" @click="transferPanel = false"></div>
+    <aside class="bottom-panel" v-show="transferPanel">
+        <div class="panel-header">
+            <div class="panel-title">Transfer</div>
+            <el-button type="text" icon="el-icon-close" @click="transferPanel = false"></el-button>
+        </div>
+        <div class="panel-body transfer-list">
+            <el-button
+                v-for="kefu in otherKefus"
+                :key="kefu.name"
+                plain
+                @click="transKefuVisitor(kefu.name, currentGuest)">
+                <{kefu.nickname || kefu.name}> - <{kefu.status || 'offline'}>
+            </el-button>
+            <div class="empty-state" v-show="otherKefus.length === 0">
+                No other agents
+            </div>
+        </div>
+    </aside>
+
+    <audio id="chatMessageAudio">
+        <source src="/static/images/alert2.ogg" type="audio/ogg">
+        <source src="/static/images/alert.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="chatMessageSendAudio">
+        <source src="/static/images/sent.ogg" type="audio/ogg">
+    </audio>
+</div>
+
+<script>
+    new Vue({
+        el: '#app',
+        delimiters: ["<{", "}>"],
+        data: {
+            view: 'list',
+            listMode: 'online',
+            token: localStorage.getItem("token") || "",
+            server: "",
+            socket: null,
+            socketReady: false,
+            connectionState: "connecting",
+            reconnectNoticeAt: 0,
+            users: [],
+            usersMap: [],
+            visitors: [],
+            visitorCount: 0,
+            visitorCurrentPage: 1,
+            visitorPageSize: 20,
+            currentGuest: "",
+            chatTitle: "",
+            chatInputing: "",
+            msgList: [],
+            messageContent: "",
+            sendDisabled: false,
+            showLoadMore: false,
+            messages: {
+                page: 1,
+                pagesize: 15
+            },
+            kfConfig: {
+                id: "",
+                name: "",
+                displayName: "",
+                avator: "",
+                to_id: ""
+            },
+            visitor: {
+                visitor_id: "",
+                name: "",
+                refer: "",
+                client_ip: "",
+                city: "",
+                status: "",
+                source_ip: "",
+                created_at: "",
+                updated_at: "",
+                extra: ""
+            },
+            visitorExtra: [],
+            replys: [],
+            replySearch: "",
+            replySearchList: [],
+            infoPanel: false,
+            replyPanel: false,
+            transferPanel: false,
+            otherKefus: [],
+            pingTimer: null,
+            refreshTimer: null
+        },
+        computed: {
+            activeVisitors: function () {
+                return this.listMode === 'online' ? this.users : this.visitors;
+            },
+            visibleReplys: function () {
+                return this.replySearchList.length > 0 ? this.replySearchList : this.replys;
+            },
+            connectionLabel: function () {
+                if (this.connectionState === "online") {
+                    return "Online";
+                }
+                if (this.connectionState === "reconnecting") {
+                    return "Reconnecting";
+                }
+                if (this.connectionState === "offline") {
+                    return "Offline";
+                }
+                return "Connecting";
+            }
+        },
+        methods: {
+            setViewportHeight: function () {
+                document.documentElement.style.setProperty('--vh', (window.innerHeight * 0.01) + 'px');
+            },
+            tokenHeader: function () {
+                return {"token": localStorage.getItem("token") || ""};
+            },
+            requireToken: function () {
+                if (!localStorage.getItem("token")) {
+                    window.location.href = "/login";
+                    return false;
+                }
+                return true;
+            },
+            logout: function () {
+                localStorage.removeItem("token");
+                window.location.href = "/login";
+            },
+            handleAuthFailure: function (data) {
+                if (data && (data.code === 400 || data.code === 401)) {
+                    localStorage.removeItem("token");
+                    window.location.href = "/login";
+                    return true;
+                }
+                return false;
+            },
+            sendAjax: function (url, method, params, callback) {
+                var _this = this;
+                $.ajax({
+                    type: method,
+                    url: url,
+                    data: params || {},
+                    headers: this.tokenHeader(),
+                    success: function (data) {
+                        if (_this.handleAuthFailure(data)) {
+                            return;
+                        }
+                        if (data.code !== 200) {
+                            _this.$message({
+                                message: data.msg || data.message || "Request failed",
+                                type: 'error'
+                            });
+                            return;
+                        }
+                        if (callback) {
+                            callback(data);
+                        }
+                    },
+                    error: function () {
+                        _this.$message({
+                            message: "Network error",
+                            type: 'error'
+                        });
+                    }
+                });
+            },
+            getKefuInfo: function () {
+                var _this = this;
+                this.sendAjax("/kefuinfo", "GET", {}, function (data) {
+                    var result = data.result || {};
+                    _this.kfConfig.id = result.username || result.name || "";
+                    _this.kfConfig.name = result.username || result.name || "";
+                    _this.kfConfig.displayName = result.nickname || result.username || result.name || "";
+                    _this.kfConfig.avator = result.avator || "";
+                    _this.initConn();
+                });
+            },
+            setConnectionState: function (state) {
+                this.connectionState = state;
+                this.socketReady = state === "online";
+            },
+            initConn: function () {
+                if (this.socket) {
+                    return;
+                }
+                var _this = this;
+                this.server = getWsBaseUrl() + "/ws_kefu?token=" + encodeURIComponent(localStorage.getItem("token") || "");
+                this.setConnectionState("connecting");
+                this.socket = new ReconnectingWebSocket(this.server);
+                this.socket.onconnecting = function () {
+                    _this.setConnectionState("reconnecting");
+                };
+                this.socket.onopen = function () {
+                    _this.setConnectionState("online");
+                    _this.sendKefuOnline();
+                    if (_this.currentGuest) {
+                        _this.safeSocketSend({
+                            type: "kfConnect",
+                            data: _this.kfConfig
+                        });
+                    }
+                    _this.refreshVisitors();
+                };
+                this.socket.onclose = function () {
+                    _this.setConnectionState("reconnecting");
+                };
+                this.socket.onerror = function () {
+                    _this.setConnectionState("reconnecting");
+                };
+                this.socket.onmessage = this.OnMessage;
+            },
+            recoverSocket: function () {
+                if (!this.requireToken()) {
+                    return;
+                }
+                if (!this.kfConfig.name && !this.kfConfig.id) {
+                    return;
+                }
+                if (!this.socket) {
+                    this.initConn();
+                    return;
+                }
+                if (this.socket.readyState === 1) {
+                    this.setConnectionState("online");
+                    this.sendKefuOnline();
+                    return;
+                }
+                this.setConnectionState("reconnecting");
+                if (typeof this.socket.refresh === "function") {
+                    this.socket.refresh();
+                }
+            },
+            safeSocketSend: function (payload) {
+                if (!this.socket || this.socket.readyState !== 1) {
+                    this.recoverSocket();
+                    return false;
+                }
+                try {
+                    this.socket.send(JSON.stringify(payload));
+                    return true;
+                } catch (err) {
+                    this.setConnectionState("reconnecting");
+                    this.recoverSocket();
+                    return false;
+                }
+            },
+            sendKefuOnline: function () {
+                this.safeSocketSend({
+                    type: "kfOnline",
+                    data: this.kfConfig
+                });
+            },
+            startTimers: function () {
+                var _this = this;
+                if (this.pingTimer) {
+                    clearInterval(this.pingTimer);
+                }
+                if (this.refreshTimer) {
+                    clearInterval(this.refreshTimer);
+                }
+                this.pingTimer = setInterval(function () {
+                    if (!_this.safeSocketSend({type: "ping", data: ""})) {
+                        _this.showReconnectNotice();
+                    }
+                }, 20000);
+                this.refreshTimer = setInterval(function () {
+                    _this.getOnlineVisitors();
+                }, 120000);
+            },
+            showReconnectNotice: function () {
+                var now = Date.now();
+                if (now - this.reconnectNoticeAt < 30000) {
+                    return;
+                }
+                this.reconnectNoticeAt = now;
+                this.$message({
+                    message: "Connection lost, reconnecting",
+                    type: "warning",
+                    duration: 1800
+                });
+            },
+            handleResume: function () {
+                this.setViewportHeight();
+                if (document.hidden) {
+                    return;
+                }
+                this.recoverSocket();
+                this.refreshVisitors();
+            },
+            handleOffline: function () {
+                this.setConnectionState("offline");
+            },
+            OnMessage: function (e) {
+                this.setConnectionState("online");
+                var redata = {};
+                try {
+                    redata = JSON.parse(e.data);
+                } catch (err) {
+                    return;
+                }
+                switch (redata.type) {
+                    case "close":
+                        this.$alert("This agent account signed in elsewhere.", "Notice", {
+                            confirmButtonText: "OK",
+                            callback: this.logout
+                        });
+                        return;
+                    case "inputing":
+                        this.handleInputing(redata.data);
+                        return;
+                    case "allUsers":
+                        this.handleOnlineUsers(redata.data || []);
+                        return;
+                    case "userOnline":
+                        this.addOnlineUser(redata.data || {});
+                        return;
+                    case "userOffline":
+                        this.removeOfflineUser(redata.data || {});
+                        return;
+                    case "notice":
+                        this.alertSound();
+                        return;
+                    case "message":
+                        this.handleSocketMessage(redata.data || {});
+                        return;
+                }
+            },
+            handleSocketMessage: function (msg) {
+                var visitorId = msg.id || msg.visitor_id || msg.to_id || "";
+                var content = {
+                    avator: msg.avator,
+                    name: msg.name,
+                    content: replaceContent(msg.content || ""),
+                    is_kefu: msg.is_kefu === "yes",
+                    time: msg.time || ""
+                };
+                if (visitorId === this.currentGuest) {
+                    this.msgList.push(content);
+                    this.scrollBottom();
+                }
+                this.updateVisitorLastMessage(visitorId, msg.content || "", content.is_kefu);
+                if (!content.is_kefu) {
+                    this.alertSound();
+                    this.chatInputing = "";
+                    if (window.parent && window.parent !== window) {
+                        window.parent.postMessage({
+                            name: msg.name,
+                            body: msg.content,
+                            icon: msg.avator
+                        }, "*");
+                    }
+                } else {
+                    this.sendSound();
+                }
+            },
+            updateVisitorLastMessage: function (visitorId, content, isKefu) {
+                for (var i = 0; i < this.users.length; i++) {
+                    if (this.users[i].uid === visitorId) {
+                        this.$set(this.users[i], 'last_message', content);
+                        if (!isKefu && visitorId !== this.currentGuest) {
+                            this.$set(this.users[i], 'hidden_new_message', false);
+                        }
+                    }
+                }
+                for (var j = 0; j < this.visitors.length; j++) {
+                    if (this.visitors[j].visitor_id === visitorId) {
+                        this.$set(this.visitors[j], 'last_message', content);
+                    }
+                }
+            },
+            addOnlineUser: function (retData) {
+                if (!retData.uid) {
+                    return;
+                }
+                retData.status = 1;
+                retData.hidden_new_message = true;
+                var exists = false;
+                for (var i = 0; i < this.users.length; i++) {
+                    if (this.users[i].uid === retData.uid) {
+                        exists = true;
+                        var merged = {};
+                        var oldItem = this.users[i];
+                        for (var oldKey in oldItem) {
+                            if (Object.prototype.hasOwnProperty.call(oldItem, oldKey)) {
+                                merged[oldKey] = oldItem[oldKey];
+                            }
+                        }
+                        for (var newKey in retData) {
+                            if (Object.prototype.hasOwnProperty.call(retData, newKey)) {
+                                merged[newKey] = retData[newKey];
+                            }
+                        }
+                        this.$set(this.users, i, merged);
+                        break;
+                    }
+                }
+                if (!exists) {
+                    this.users.unshift(retData);
+                }
+                for (var j = 0; j < this.visitors.length; j++) {
+                    if (this.visitors[j].visitor_id === retData.uid) {
+                        this.$set(this.visitors[j], 'status', 1);
+                    }
+                }
+            },
+            removeOfflineUser: function (retData) {
+                var vid = retData.uid || retData.id || "";
+                for (var i = 0; i < this.users.length; i++) {
+                    if (this.users[i].uid === vid) {
+                        this.users.splice(i, 1);
+                        break;
+                    }
+                }
+                for (var j = 0; j < this.visitors.length; j++) {
+                    if (this.visitors[j].visitor_id === vid) {
+                        this.$set(this.visitors[j], 'status', 0);
+                    }
+                }
+                if (this.currentGuest === vid) {
+                    this.visitor.status = "Offline";
+                }
+            },
+            handleOnlineUsers: function (retData) {
+                this.usersMap = [];
+                for (var i = 0; i < retData.length; i++) {
+                    this.usersMap[retData[i].uid] = retData[i].username;
+                    if (!retData[i].last_message) {
+                        retData[i].last_message = "new visitor";
+                    }
+                    retData[i].hidden_new_message = true;
+                }
+                this.users = retData;
+            },
+            handleInputing: function (retData) {
+                if (!retData) {
+                    return;
+                }
+                if (retData.from === this.currentGuest) {
+                    this.chatInputing = retData.content ? "Typing: " + retData.content + "..." : "";
+                }
+                for (var i = 0; i < this.users.length; i++) {
+                    if (this.users[i].uid === retData.from) {
+                        this.$set(this.users[i], 'last_message', (retData.content || "") + "...");
+                    }
+                }
+            },
+            switchListMode: function (mode) {
+                if (mode === 'online') {
+                    this.getOnlineVisitors();
+                } else {
+                    this.getVisitorPage(1);
+                }
+            },
+            refreshVisitors: function () {
+                if (this.listMode === 'online') {
+                    this.getOnlineVisitors();
+                } else {
+                    this.getVisitorPage(this.visitorCurrentPage || 1);
+                }
+            },
+            getOnlineVisitors: function () {
+                var _this = this;
+                var unread = {};
+                for (var i = 0; i < this.users.length; i++) {
+                    if (this.users[i].hidden_new_message === false) {
+                        unread[this.users[i].uid] = true;
+                    }
+                }
+                this.sendAjax("/visitors_kefu_online", "GET", {}, function (data) {
+                    var list = data.result || [];
+                    for (var j = 0; j < list.length; j++) {
+                        _this.$set(list[j], 'hidden_new_message', unread[list[j].uid] ? false : true);
+                    }
+                    _this.users = list;
+                });
+            },
+            visitorPage: function (page) {
+                this.getVisitorPage(page);
+            },
+            getVisitorPage: function (page) {
+                var _this = this;
+                this.visitorCurrentPage = page || 1;
+                this.sendAjax("/visitors", "GET", {
+                    page: this.visitorCurrentPage,
+                    pagesize: this.visitorPageSize
+                }, function (data) {
+                    var result = data.result || {};
+                    _this.visitors = result.list || [];
+                    _this.visitorCount = result.count || 0;
+                });
+            },
+            visitorId: function (item) {
+                return item.uid || item.visitor_id || "";
+            },
+            visitorName: function (item) {
+                return item.username || item.name || item.visitor_id || item.uid || "Visitor";
+            },
+            visitorAvatar: function (item) {
+                return item.avator || "/static/images/4.jpg";
+            },
+            visitorOnline: function (item) {
+                if (this.listMode === 'online') {
+                    return true;
+                }
+                return item.status === 1 || item.status === "1" || item.status === "online";
+            },
+            visitorKey: function (item) {
+                return this.visitorId(item) || JSON.stringify(item);
+            },
+            backToList: function () {
+                this.view = 'list';
+                this.infoPanel = false;
+                this.replyPanel = false;
+                this.transferPanel = false;
+                this.refreshVisitors();
+            },
+            talkTo: function (item) {
+                var guestId = this.visitorId(item);
+                if (!guestId) {
+                    return;
+                }
+                this.currentGuest = guestId;
+                this.chatTitle = this.visitorName(item);
+                this.chatInputing = "";
+                this.kfConfig.to_id = guestId;
+                this.view = 'chat';
+                this.safeSocketSend({
+                    type: "kfConnect",
+                    data: this.kfConfig
+                });
+                this.getVistorInfo(guestId);
+                this.messages.page = 1;
+                this.msgList = [];
+                this.showLoadMore = false;
+                this.getHistoryMessage();
+                for (var i = 0; i < this.users.length; i++) {
+                    if (this.users[i].uid === guestId) {
+                        this.$set(this.users[i], 'hidden_new_message', true);
+                    }
+                }
+            },
+            getHistoryMessage: function () {
+                if (!this.currentGuest) {
+                    return;
+                }
+                var _this = this;
+                $.get("/2/messagesPages", {
+                    page: this.messages.page,
+                    pagesize: this.messages.pagesize,
+                    visitor_id: this.currentGuest
+                }, function (res) {
+                    if (!res || res.code !== 200 || !res.result) {
+                        return;
+                    }
+                    var msgList = res.result.list || [];
+                    _this.showLoadMore = msgList.length >= _this.messages.pagesize;
+                    for (var i in msgList) {
+                        var item = msgList[i];
+                        if (item["mes_type"] === "kefu") {
+                            item.is_kefu = true;
+                            item.avator = item["kefu_avator"];
+                            item.name = item["kefu_name"];
+                        } else {
+                            item.is_kefu = false;
+                            item.avator = item["visitor_avator"];
+                            item.name = item["visitor_name"];
+                        }
+                        item.content = replaceContent(item["content"] || "");
+                        item.time = item["create_time"] || item["time"] || "";
+                        _this.msgList.unshift(item);
+                    }
+                    if (_this.messages.page === 1) {
+                        _this.scrollBottom();
+                    }
+                    _this.messages.page++;
+                });
+            },
+            getVistorInfo: function (vid) {
+                var _this = this;
+                this.sendAjax("/visitor", "GET", {visitorId: vid}, function (data) {
+                    var r = data.result || {};
+                    _this.visitor = r;
+                    _this.visitor.created_at = r.created_at ? formatDate(r.created_at) : "";
+                    _this.visitor.updated_at = r.updated_at ? formatDate(r.updated_at) : "";
+                    _this.visitor.status = r.status === 1 ? "Online" : "Offline";
+                    _this.chatTitle = r.name || _this.chatTitle;
+                    _this.visitorExtra = [];
+                    if (r.extra) {
+                        try {
+                            var extra = JSON.parse(b64ToUtf8(r.extra));
+                            if (typeof extra === "string") {
+                                extra = JSON.parse(extra);
+                            }
+                            for (var key in extra) {
+                                if (!Object.prototype.hasOwnProperty.call(extra, key)) {
+                                    continue;
+                                }
+                                if (key === "visitorAvatar" || key === "visitorName") {
+                                    continue;
+                                }
+                                _this.visitorExtra.push({
+                                    key: key,
+                                    val: extra[key] || "-"
+                                });
+                            }
+                        } catch (err) {
+                            _this.visitorExtra = [];
+                        }
+                    }
+                });
+            },
+            chatToUser: function () {
+                var content = this.messageContent.replace(/^\s+|\s+$/g, "");
+                if (!content || !this.currentGuest || this.sendDisabled) {
+                    return;
+                }
+                var _this = this;
+                this.sendDisabled = true;
+                this.sendAjax("/kefu/message", "POST", {
+                    type: "kefu",
+                    to_id: this.currentGuest,
+                    content: content
+                }, function () {
+                    _this.messageContent = "";
+                    _this.sendDisabled = false;
+                    _this.scrollBottom();
+                });
+                setTimeout(function () {
+                    _this.sendDisabled = false;
+                }, 3000);
+            },
+            scrollBottom: function () {
+                var _this = this;
+                this.$nextTick(function () {
+                    var el = _this.$refs.messageList;
+                    if (el) {
+                        el.scrollTop = el.scrollHeight;
+                    }
+                });
+            },
+            pickImage: function () {
+                this.$refs.imageInput.value = "";
+                this.$refs.imageInput.click();
+            },
+            pickFile: function () {
+                this.$refs.fileInput.value = "";
+                this.$refs.fileInput.click();
+            },
+            uploadImageSelected: function (event) {
+                var file = event.target.files[0];
+                if (!file || !filter(file)) {
+                    return;
+                }
+                var _this = this;
+                var formData = new FormData();
+                formData.append("imgfile", file);
+                $.ajax({
+                    url: "/uploadimg",
+                    type: "POST",
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    dataType: "JSON",
+                    mimeType: "multipart/form-data",
+                    success: function (res) {
+                        if (res.code !== 200) {
+                            _this.$message({message: res.msg || "Upload failed", type: "error"});
+                            return;
+                        }
+                        _this.messageContent += "img[/" + res.result.path + "]";
+                        _this.chatToUser();
+                    }
+                });
+            },
+            uploadFileSelected: function (event) {
+                var file = event.target.files[0];
+                if (!file) {
+                    return;
+                }
+                var _this = this;
+                var formData = new FormData();
+                formData.append("realfile", file);
+                $.ajax({
+                    url: "/uploadfile",
+                    type: "POST",
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    dataType: "JSON",
+                    mimeType: "multipart/form-data",
+                    success: function (res) {
+                        if (res.code !== 200) {
+                            _this.$message({message: res.msg || "Upload failed", type: "error"});
+                            return;
+                        }
+                        var data = JSON.stringify({
+                            name: res.result.name,
+                            ext: res.result.ext,
+                            size: res.result.size,
+                            path: "/" + res.result.path
+                        });
+                        _this.messageContent += "attachment[" + data + "]";
+                        _this.chatToUser();
+                    }
+                });
+            },
+            getReplys: function () {
+                var _this = this;
+                this.sendAjax("/replys", "GET", {}, function (data) {
+                    _this.replys = data.result || [];
+                });
+            },
+            searchReply: function () {
+                var _this = this;
+                if (!this.replySearch) {
+                    this.replySearchList = [];
+                    return;
+                }
+                this.sendAjax("/reply_search", "POST", {search: this.replySearch}, function (data) {
+                    _this.replySearchList = data.result || [];
+                });
+            },
+            useReply: function (content) {
+                this.messageContent = content || "";
+                this.replyPanel = false;
+            },
+            addIpblack: function (ip) {
+                if (!ip) {
+                    return;
+                }
+                var _this = this;
+                this.sendAjax("/ipblack", "POST", {ip: ip}, function (data) {
+                    _this.$message({message: data.msg || "Done", type: "success"});
+                });
+            },
+            confirmCloseVisitor: function () {
+                if (!this.currentGuest) {
+                    return;
+                }
+                var _this = this;
+                this.$confirm("End this chat?", "Confirm", {
+                    confirmButtonText: "End",
+                    cancelButtonText: "Cancel",
+                    type: "warning"
+                }).then(function () {
+                    _this.closeVisitor(_this.currentGuest);
+                }).catch(function () {});
+            },
+            closeVisitor: function (visitorId) {
+                var _this = this;
+                this.sendAjax("/2/message_close", "GET", {visitor_id: visitorId}, function () {
+                    _this.$message({message: "Closed", type: "success"});
+                    _this.backToList();
+                });
+            },
+            loadOtherKefus: function () {
+                var _this = this;
+                this.sendAjax("/other_kefulist", "GET", {}, function (data) {
+                    _this.otherKefus = data.result || [];
+                });
+            },
+            transKefuVisitor: function (kefu, visitorId) {
+                var _this = this;
+                this.sendAjax("/trans_kefu", "GET", {
+                    kefu_id: kefu,
+                    visitor_id: visitorId
+                }, function () {
+                    _this.$message({message: "Transferred", type: "success"});
+                    _this.transferPanel = false;
+                    _this.backToList();
+                });
+            },
+            alertSound: function () {
+                var b = document.getElementById("chatMessageAudio");
+                var p = b && b.play();
+                p && p.then(function () {}).catch(function () {});
+            },
+            sendSound: function () {
+                var b = document.getElementById("chatMessageSendAudio");
+                var p = b && b.play();
+                p && p.then(function () {}).catch(function () {});
+            },
+            onPasteUpload: function (event) {
+                var items = event.clipboardData && event.clipboardData.items;
+                var file = null;
+                if (items && items.length) {
+                    for (var i = 0; i < items.length; i++) {
+                        if (items[i].type.indexOf('image') !== -1) {
+                            file = items[i].getAsFile();
+                        }
+                    }
+                }
+                if (!file) {
+                    return;
+                }
+                var fakeEvent = {target: {files: [file]}};
+                this.uploadImageSelected(fakeEvent);
+            }
+        },
+        mounted: function () {
+            this.setViewportHeight();
+            window.addEventListener("resize", this.setViewportHeight);
+            window.addEventListener("focus", this.handleResume);
+            window.addEventListener("online", this.handleResume);
+            window.addEventListener("offline", this.handleOffline);
+            document.addEventListener("visibilitychange", this.handleResume);
+            document.addEventListener("paste", this.onPasteUpload);
+        },
+        beforeDestroy: function () {
+            window.removeEventListener("resize", this.setViewportHeight);
+            window.removeEventListener("focus", this.handleResume);
+            window.removeEventListener("online", this.handleResume);
+            window.removeEventListener("offline", this.handleOffline);
+            document.removeEventListener("visibilitychange", this.handleResume);
+            document.removeEventListener("paste", this.onPasteUpload);
+            if (this.pingTimer) {
+                clearInterval(this.pingTimer);
+            }
+            if (this.refreshTimer) {
+                clearInterval(this.refreshTimer);
+            }
+        },
+        created: function () {
+            if (!this.requireToken()) {
+                return;
+            }
+            this.getKefuInfo();
+            this.getOnlineVisitors();
+            this.getVisitorPage(1);
+            this.getReplys();
+            this.startTimers();
+        }
+    });
+</script>
+</body>
+</html>

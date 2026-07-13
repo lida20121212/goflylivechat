@@ -129,6 +129,9 @@
             openUrl(url){
                 window.location.href=url;
             },
+            isMobileClient(){
+                return /Android|iPhone|iPad|iPod|Mobile|Windows Phone/i.test(navigator.userAgent) || window.innerWidth <= 768;
+            },
             GetQueryString(name){
                 var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
                 var r = window.location.search.substr(1).match(reg);
@@ -154,6 +157,10 @@
             }
         },
         created: function () {
+            if (this.isMobileClient() && this.GetQueryString("desktop")!="1") {
+                window.location.href="/m/chat";
+                return;
+            }
             this.checkAuth();
             this.focusWindow();
             $(function(){

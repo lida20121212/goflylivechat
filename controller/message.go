@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/gorilla/websocket"
 	"goflylivechat/common"
 	"goflylivechat/models"
 	"goflylivechat/tools"
@@ -57,9 +56,7 @@ func SendMessageV2(c *gin.Context) {
 	models.CreateMessage(kefuInfo.Name, vistorInfo.VisitorId, content, cType)
 	//var msg TypeMessage
 	if cType == "kefu" {
-		guest, ok := ws.ClientList[vistorInfo.VisitorId]
-
-		if guest != nil && ok {
+		if ws.VisitorExists(vistorInfo.VisitorId) {
 			ws.VisitorMessage(vistorInfo.VisitorId, content, kefuInfo)
 		}
 		ws.KefuMessage(vistorInfo.VisitorId, content, kefuInfo)
@@ -83,10 +80,7 @@ func SendMessageV2(c *gin.Context) {
 		})
 	}
 	if cType == "visitor" {
-		guest, ok := ws.ClientList[vistorInfo.VisitorId]
-		if ok && guest != nil {
-			guest.UpdateTime = time.Now()
-		}
+		ws.TouchVisitor(vistorInfo.VisitorId)
 		//kefuConns, ok := ws.KefuList[kefuInfo.Name]
 		//if kefuConns == nil || !ok {
 		//	c.JSON(200, gin.H{
@@ -108,10 +102,9 @@ func SendMessageV2(c *gin.Context) {
 			},
 		}
 		str, _ := json.Marshal(msg)
-		ws.OneKefuMessage(kefuInfo.Name, str)
+		sent := ws.OneKefuMessage(kefuInfo.Name, str)
 		//ws.KefuMessage(vistorInfo.VisitorId, content, kefuInfo)
-		kefu, ok := ws.KefuList[kefuInfo.Name]
-		if !ok || kefu == nil {
+		if !sent {
 			go SendNoticeEmail(content+"|"+vistorInfo.Name, content)
 		}
 		go ws.VisitorAutoReply(vistorInfo, kefuInfo, content)
@@ -160,9 +153,7 @@ func SendKefuMessage(c *gin.Context) {
 	models.CreateMessage(kefuInfo.Name, vistorInfo.VisitorId, content, cType)
 	//var msg TypeMessage
 
-	guest, ok := ws.ClientList[vistorInfo.VisitorId]
-
-	if guest != nil && ok {
+	if ws.VisitorExists(vistorInfo.VisitorId) {
 		ws.VisitorMessage(vistorInfo.VisitorId, content, kefuInfo)
 	}
 	ws.KefuMessage(vistorInfo.VisitorId, content, kefuInfo)
@@ -186,10 +177,7 @@ func SendVisitorNotice(c *gin.Context) {
 		Type: "notice",
 		Data: notice,
 	}
-	str, _ := json.Marshal(msg)
-	for _, visitor := range ws.ClientList {
-		visitor.Conn.WriteMessage(websocket.TextMessage, str)
-	}
+	ws.BroadcastVisitors(msg)
 	c.JSON(200, gin.H{
 		"code": 200,
 		"msg":  "ok",
@@ -205,18 +193,12 @@ func SendCloseMessageV2(c *gin.Context) {
 		return
 	}
 
-	oldUser, ok := ws.ClientList[visitorId]
-	if oldUser != nil || ok {
-		msg := ws.TypeMessage{
-			Type: "force_close",
-			Data: visitorId,
-		}
-		str, _ := json.Marshal(msg)
-		err := oldUser.Conn.WriteMessage(websocket.TextMessage, str)
-		oldUser.Conn.Close()
-		delete(ws.ClientList, visitorId)
-		tools.Logger().Println("close_message", oldUser, err)
+	msg := ws.TypeMessage{
+		Type: "force_close",
+		Data: visitorId,
 	}
+	closed := ws.CloseVisitor(visitorId, msg)
+	tools.Logger().Println("close_message", visitorId, closed)
 	c.JSON(200, gin.H{
 		"code": 200,
 		"msg":  "ok",

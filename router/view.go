@@ -12,6 +12,8 @@ func InitViewRouter(engine *gin.Engine) {
 	engine.GET("/livechat", PageChat)
 	engine.GET("/main", PageMain)
 	engine.GET("/chat_main", PageChatMain)
+	engine.GET("/m/chat", PageMobileChat)
+	engine.GET("/chat_mobile", PageMobileChat)
 	engine.GET("/setting", PageSetting)
 }
 
@@ -49,6 +51,11 @@ func PageChat(c *gin.Context) {
 // Support agent console
 func PageChatMain(c *gin.Context) {
 	c.HTML(http.StatusOK, "chat_main.html", nil)
+}
+
+// Mobile support agent console
+func PageMobileChat(c *gin.Context) {
+	c.HTML(http.StatusOK, "chat_mobile.html", nil)
 }
 
 // Settings

@@ -221,7 +221,7 @@ func GetVisitorMessage(c *gin.Context) {
 func GetVisitorOnlines(c *gin.Context) {
 	users := make([]map[string]string, 0)
 	visitorIds := make([]string, 0)
-	for uid, visitor := range ws.ClientList {
+	for uid, visitor := range ws.VisitorSnapshot() {
 		userInfo := make(map[string]string)
 		userInfo["uid"] = uid
 		userInfo["name"] = visitor.Name
@@ -263,7 +263,7 @@ func GetKefusVisitorOnlines(c *gin.Context) {
 	kefuName, _ := c.Get("kefu_name")
 	users := make([]*VisitorOnline, 0)
 	visitorIds := make([]string, 0)
-	for uid, visitor := range ws.ClientList {
+	for uid, visitor := range ws.VisitorSnapshot() {
 		if visitor.To_id != kefuName {
 			continue
 		}
