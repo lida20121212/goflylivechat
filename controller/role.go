@@ -9,7 +9,7 @@ func GetRoleList(c *gin.Context) {
 	roles := models.FindRoles()
 	c.JSON(200, gin.H{
 		"code":   200,
-		"msg":    "获取成功",
+		"msg":    "取得成功",
 		"result": roles,
 	})
 }
@@ -21,7 +21,7 @@ func PostRole(c *gin.Context) {
 	if roleId == "" || method == "" || name == "" || path == "" {
 		c.JSON(200, gin.H{
 			"code": 400,
-			"msg":  "参数不能为空",
+			"msg":  "參數不能為空",
 		})
 		return
 	}

@@ -19,7 +19,7 @@ func SendServerJiang(title string, content string, domain string) string {
 		return ""
 	}
 	sendStr := fmt.Sprintf("%s%s", title, content)
-	desp := title + ":" + content + "[登录](http://" + domain + "/main)"
+	desp := title + ":" + content + "[登入](http://" + domain + "/main)"
 	url := serverJiangAPI + "?text=" + sendStr + "&desp=" + desp
 	//log.Println(url)
 	res := tools.Get(url)

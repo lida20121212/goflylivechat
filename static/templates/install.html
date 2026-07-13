@@ -1,10 +1,10 @@
-<html lang="cn">
+<html lang="zh-Hant">
 <head>
     <meta charset="utf-8">
     <meta name="renderer" content="webkit">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <meta name="description" content="">
-    <title>GOFLY客服系统安装页面</title>
+    <title>永利客服小微安裝</title>
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/element-ui@2.13.1/lib/theme-chalk/index.css">
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/element-ui@2.13.1/lib/index.js"></script>
@@ -63,25 +63,25 @@
 <div id="app" class="signin">
     <template>
         <div class="loginHtml">
-            <h1 class="loginTitle">GOFLY客服系统安装</h1>
+            <h1 class="loginTitle">永利客服小微安裝</h1>
             <el-form :model="mysql"  :rules="rules" ref="mysql">
                 <el-form-item  prop="server">
-                    <el-input v-model="mysql.server" placeholder="数据库地址"></el-input>
+                    <el-input v-model="mysql.server" placeholder="資料庫地址"></el-input>
                 </el-form-item>
                 <el-form-item  prop="port">
-                    <el-input v-model="mysql.port" placeholder="数据库端口"></el-input>
+                    <el-input v-model="mysql.port" placeholder="資料庫連接埠"></el-input>
                 </el-form-item>
                 <el-form-item  prop="database">
-                    <el-input v-model="mysql.database" placeholder="数据库名"></el-input>
+                    <el-input v-model="mysql.database" placeholder="資料庫名稱"></el-input>
                 </el-form-item>
                 <el-form-item  prop="username">
-                    <el-input v-model="mysql.username" placeholder="数据库用户名"></el-input>
+                    <el-input v-model="mysql.username" placeholder="資料庫帳號"></el-input>
                 </el-form-item>
                 <el-form-item  prop="password">
-                    <el-input v-model="mysql.password" placeholder="数据库密码"></el-input>
+                    <el-input v-model="mysql.password" placeholder="資料庫密碼"></el-input>
                 </el-form-item>
                 <el-form-item>
-                    <el-button :disabled="sendDisabled" style="width: 100%" :loading="loading" type="primary" @click="install()">安装</el-button>
+                    <el-button :disabled="sendDisabled" style="width: 100%" :loading="loading" type="primary" @click="install()">安裝</el-button>
                 </el-form-item>
             </el-form>
             <div class="clear"></div>
@@ -105,19 +105,19 @@
             },
             rules: {
                 server: [
-                    { required: true, message: '数据库地址不能为空', trigger: 'blur' },
+                    { required: true, message: '資料庫地址不能為空', trigger: 'blur' },
                 ],
                 port: [
-                    { required: true, message: '数据库端口不能为空', trigger: 'blur' },
+                    { required: true, message: '資料庫連接埠不能為空', trigger: 'blur' },
                 ],
                 database: [
-                    { required: true, message: '数据库名不能为空', trigger: 'blur' },
+                    { required: true, message: '資料庫名稱不能為空', trigger: 'blur' },
                 ],
                 username: [
-                    { required: true, message: '数据库用户名不能为空', trigger: 'blur' },
+                    { required: true, message: '資料庫帳號不能為空', trigger: 'blur' },
                 ],
                 password: [
-                    { required: true, message: '数据库密码不能为空', trigger: 'blur' },
+                    { required: true, message: '資料庫密碼不能為空', trigger: 'blur' },
                 ],
             },
             sendDisabled:false,

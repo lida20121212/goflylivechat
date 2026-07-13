@@ -5,17 +5,17 @@
 
             <el-main class="mainMain">
                 <el-form :model="modifyPass" label-width="100px">
-                    <el-form-item label="原密码">
+                    <el-form-item label="舊密碼">
                         <el-input v-model="modifyPass.old_pass"></el-input>
                     </el-form-item>
-                    <el-form-item label="新密码">
+                    <el-form-item label="新密碼">
                         <el-input v-model="modifyPass.new_pass"></el-input>
                     </el-form-item>
-                    <el-form-item label="重复新密码">
+                    <el-form-item label="再次輸入新密碼">
                         <el-input v-model="modifyPass.confirm_new_pass"></el-input>
                     </el-form-item>
                     <el-form-item>
-                        <el-button type="primary" @click="setModifyPass()">保存</el-button>
+                        <el-button type="primary" @click="setModifyPass()">儲存</el-button>
                         <el-button>取消</el-button>
                     </el-form-item>
                 </el-form>

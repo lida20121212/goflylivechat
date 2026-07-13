@@ -81,7 +81,7 @@ function flashTitle() {
             document.title = '【】' + originTitle;
         }
         if (titleNum == 2) {
-            document.title = '【new message】' + originTitle;
+            document.title = '【新訊息】' + originTitle;
         }
     }, 500);
 
@@ -90,99 +90,17 @@ function clearFlashTitle() {
     clearInterval(titleTimer);
     document.title = originTitle;
 }
-var faceTitles = ["[微笑]", "[嘻嘻]", "[哈哈]", "[可爱]", "[可怜]", "[挖鼻]", "[吃惊]", "[害羞]", "[挤眼]", "[闭嘴]", "[鄙视]", "[爱你]", "[泪]", "[偷笑]", "[亲亲]", "[生病]", "[太开心]", "[白眼]", "[右哼哼]", "[左哼哼]", "[嘘]", "[衰]", "[委屈]", "[吐]", "[哈欠]", "[抱抱]", "[怒]", "[疑问]", "[馋嘴]", "[拜拜]", "[思考]", "[汗]", "[困]", "[睡]", "[钱]", "[失望]", "[酷]", "[色]", "[哼]", "[鼓掌]", "[晕]", "[悲伤]", "[抓狂]", "[黑线]", "[阴险]", "[怒骂]", "[互粉]", "[心]", "[伤心]", "[猪头]", "[熊猫]", "[兔子]", "[ok]", "[耶]", "[good]", "[NO]", "[赞]", "[来]", "[弱]", "[草泥马]", "[神马]", "[囧]", "[浮云]", "[给力]", "[围观]", "[威武]", "[奥特曼]", "[礼物]", "[钟]", "[话筒]", "[蜡烛]", "[蛋糕]"];
-function placeFace() {
-    var faces=[];
-    for(var i=0;i<faceTitles.length;i++){
-        faces[faceTitles[i]]="/static/images/face/"+i+".gif";
-    }
-    return faces;
-}
 function replaceContent (content,baseUrl) {// 转义聊天内容中的特殊字符
     if(typeof baseUrl=="undefined"){
         baseUrl="";
     }
-    var faces=placeFace();
     content = (content || '')
-        .replace(/face\[(.*?)\]/g, function (face) {  // 转义表情
-            var alt = face.replace(/^face/g, '');
-            return '<img alt="' + alt + '" title="' + alt + '" src="'+baseUrl + faces[alt] + '">';
-        })
         .replace(/img\[(.*?)\]/g, function (face) {  // 转义图片
             var src = face.replace(/^img\[/g, '').replace(/\]/g, '');;
             return '<img onclick="bigPic(src,true)" src="' +baseUrl+ src + '" style="max-width: 150px"/></div>';
         })
         .replace(/\n/g, '<br>'); // 转义换行
-    content=replaceAttachment(content);
     return content;
-}
-//替换附件展示
-function replaceAttachment(str){
-    return str.replace(/attachment\[(.*?)\]/g, function (result) {
-        var mutiFiles=result.match(/attachment\[(.*?)\]/)
-        if (mutiFiles.length<2){
-            return result;
-        }
-        //return result;
-
-        var info=JSON.parse(mutiFiles[1])
-        var imgSrc="";
-        switch(info.ext){
-            case ".mp3":
-                imgSrc="/static/images/ext/MP3.png";
-                break;
-            case ".zip":
-                imgSrc="/static/images/ext/ZIP.png";
-                break;
-            case ".txt":
-                imgSrc="/static/images/ext/TXT.png";
-                break;
-            case ".7z":
-                imgSrc="/static/images/ext/7z.png";
-                break;
-            case ".bpm":
-                imgSrc="/static/images/ext/BMP.png";
-                break;
-            case ".png":
-                imgSrc="/static/images/ext/PNG.png";
-                break;
-            case ".jpg":
-                imgSrc="/static/images/ext/JPG.png";
-                break;
-            case ".jpeg":
-                imgSrc="/static/images/ext/JPEG.png";
-                break;
-            case ".pdf":
-                imgSrc="/static/images/ext/PDF.png";
-                break;
-            case ".doc":
-                imgSrc="/static/images/ext/DOC.png";
-                break;
-            case ".docx":
-                imgSrc="/static/images/ext/DOCX.png";
-                break;
-            case ".rar":
-                imgSrc="/static/images/ext/RAR.png";
-                break;
-            case ".xlsx":
-                imgSrc="/static/images/ext/XLSX.png";
-                break;
-            case ".csv":
-                imgSrc="/static/images/ext/XLSX.png";
-                break;
-            default:
-                imgSrc="/static/images/ext/default.png";
-                break;
-        }
-        var html= `<div onclick="window.open('`+info.path+`')" class="productCard">
-                        <div><img src='`+imgSrc+`' style='width: 38px;height: 38px;' /></div>
-                        <div class="productCardTitle">
-                            <div class="productCardTitle">`+info.name+`</div>
-                            <div style="font-size: 12px;color: #666">`+formatFileSize(info.size)+`</div>
-                        </div>
-                    </div>`;
-        return html;
-    })
 }
 function formatFileSize(fileSize) {
     if (fileSize < 1024) {
@@ -223,12 +141,12 @@ function sleep(time) {
     while(new Date().getTime() < startTime) {}
 }
 function checkLang(){
-    var langs=["cn","en"];
+    var langs=["tw","cn","en"];
     var lang=getQuery("lang");
-    if(lang!=""&&langs.indexOf(lang) > 0 ){
+    if(lang!=""&&langs.indexOf(lang) >= 0 ){
         return lang;
     }
-    return "cn";
+    return "tw";
 }
 function getQuery(key) {
     var query = window.location.search.substring(1);

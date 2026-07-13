@@ -7,7 +7,7 @@
                     :default-active="fid">
                         <el-menu-item  v-on:click="openUrl('/write')">
                             <i class="el-icon-edit"></i>
-                            <span slot="title">写信</span>
+                            <span slot="title">寫信</span>
                         </el-menu-item>
                         <el-menu-item :index="v" v-for="(f,v) in folders" v-bind:key="v"  v-on:click="getFolders(1,v,true)">
                             <i class="el-icon-message"></i>
@@ -22,7 +22,7 @@
                             <el-timeline-item  v-for="item in mails" v-bind:key="item.Id" :timestamp="item.Date" placement="top">
                                 <el-card  v-on:click.native="openUrl('/view?fid='+fid+'&id='+item.Id)">
                                     <h4><{item.Subject}></h4>
-                                    <p><{item.From}> 发送于 <{item.Date}></p>
+                                    <p><{item.From}> 傳送於 <{item.Date}></p>
                                 </el-card>
                             </el-timeline-item>
                         </el-timeline>

@@ -1,5 +1,5 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html lang="cn">
+<html lang="zh-Hant">
 <head>
     <meta charset="utf-8">
     <meta name="renderer" content="webkit">
@@ -68,20 +68,20 @@
 <div id="app" class="signin">
     <template>
         <el-alert
-                title="请在官网注册账户并绑定手机，在此进行授权验证！"
+                title="請先在官網註冊帳號並綁定手機，再於此進行授權驗證！"
                 type="warning">
         </el-alert>
         <div class="loginHtml">
-            <h1 class="loginTitle">官网账户验证</h1>
+            <h1 class="loginTitle">官網帳號驗證</h1>
             <el-form :model="kefuForm">
                 <el-form-item  prop="phone">
-                    <el-input v-model="kefuForm.phone" placeholder="手机号"></el-input>
+                    <el-input v-model="kefuForm.phone" placeholder="手機號碼"></el-input>
                 </el-form-item>
                 <el-form-item  prop="password">
-                    <el-input show-password v-model="kefuForm.password" placeholder="密码"></el-input>
+                    <el-input show-password v-model="kefuForm.password" placeholder="密碼"></el-input>
                 </el-form-item>
                 <el-form-item>
-                    <el-button type="success" style="width: 100%" :loading="loading" @click="kefuLogin('kefuForm')">登录</el-button>
+                    <el-button type="success" style="width: 100%" :loading="loading" @click="kefuLogin('kefuForm')">登入</el-button>
                 </el-form-item>
             </el-form>
         </div>
@@ -110,12 +110,12 @@
                 $.post("/2/bindOfficial", data, function (data) {
                     if (data == "success") {
                         _this.$message({
-                            message: "认证成功！",
+                            message: "認證成功！",
                             type: 'success'
                         });
                     } else {
                         _this.$message({
-                            message: "认证失败！",
+                            message: "認證失敗！",
                             type: 'error'
                         });
                     }

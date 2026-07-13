@@ -8,20 +8,20 @@
 
             <el-main class="mainMain">
                 <el-form :model="ruleForm" :rules="rules" ref="ruleForm"  label-width="120px">
-                    <el-form-item label="smtp地址" prop="smtp">
-                        <el-input v-model="ruleForm.smtp" placeholder="SMTP服务器如smtp.sina.net:25包含端口号"></el-input>
+                    <el-form-item label="SMTP 地址" prop="smtp">
+                        <el-input v-model="ruleForm.smtp" placeholder="SMTP 伺服器，例如 smtp.sina.net:25，需包含連接埠"></el-input>
                     </el-form-item>
-                    <el-form-item label="主题" prop="subject">
+                    <el-form-item label="主旨" prop="subject">
                         <el-input v-model="ruleForm.subject"></el-input>
                     </el-form-item>
                     <el-form-item label="收件人" prop="to">
                         <el-input v-model="ruleForm.to"></el-input>
                     </el-form-item>
-                    <el-form-item label="内容" prop="content">
+                    <el-form-item label="內容" prop="content">
                         <el-input type="textarea" v-model="ruleForm.content"></el-input>
                     </el-form-item>
                     <el-form-item>
-                        <el-button type="primary" @click="submitForm('ruleForm')">立即发送</el-button>
+                        <el-button type="primary" @click="submitForm('ruleForm')">立即傳送</el-button>
                         <el-button @click="resetForm('ruleForm')">取消</el-button>
                     </el-form-item>
                 </el-form>
@@ -50,16 +50,16 @@
             },
             rules: {
                 smtp: [
-                    { required: true, message: 'SMTP服务器如"smtp.sina.net:25"包含端口号', trigger: 'blur' },
+                    { required: true, message: 'SMTP 伺服器需包含連接埠，例如 "smtp.sina.net:25"', trigger: 'blur' },
                 ],
                 to: [
-                    { required: true, message: '邮箱地址', trigger: 'blur' },
+                    { required: true, message: '請輸入信箱地址', trigger: 'blur' },
                 ],
                 subject: [
-                    { required: true, message: '主题', trigger: 'blur' },
+                    { required: true, message: '請輸入主旨', trigger: 'blur' },
                 ],
                 content: [
-                    { required: true, message: '内容', trigger: 'blur' },
+                    { required: true, message: '請輸入內容', trigger: 'blur' },
                 ],
             },
         },

@@ -28,7 +28,7 @@ func LoginCheckPass(c *gin.Context) {
 	if info.Name == "" || info.Password != tools.Md5(password) {
 		c.JSON(200, gin.H{
 			"code":    401,
-			"message": "Incorrect username or password", // User-friendly message
+			"message": "帳號或密碼不正確", // User-friendly message
 		})
 		return
 	}
@@ -45,7 +45,7 @@ func LoginCheckPass(c *gin.Context) {
 	if err != nil {
 		c.JSON(200, gin.H{
 			"code":    500,
-			"message": "Login temporarily unavailable",
+			"message": "暫時無法登入，請稍後再試",
 		})
 		return
 	}
@@ -53,7 +53,7 @@ func LoginCheckPass(c *gin.Context) {
 	// Successful response
 	c.JSON(200, gin.H{
 		"code":    200,
-		"message": "Login successful",
+		"message": "登入成功",
 		"result": gin.H{
 			"token":      token,
 			"created_at": userinfo["create_time"],

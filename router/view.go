@@ -40,7 +40,7 @@ func PageChat(c *gin.Context) {
 		referralSource = c.Request.Referer()
 	}
 	if referralSource == "" {
-		referralSource = "Direct access" // More natural English
+		referralSource = "直接進入"
 	}
 
 	c.HTML(http.StatusOK, "chat_page.html", gin.H{

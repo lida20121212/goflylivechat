@@ -20,7 +20,7 @@ func PostInstall(c *gin.Context) {
 	if !notExist {
 		c.JSON(200, gin.H{
 			"code": 400,
-			"msg":  "系统已经安装过了",
+			"msg":  "系統已安裝",
 		})
 		return
 	}
@@ -36,7 +36,7 @@ func PostInstall(c *gin.Context) {
 		tools.Logger().Println(err)
 		c.JSON(200, gin.H{
 			"code": 400,
-			"msg":  "数据库连接失败:" + err.Error(),
+			"msg":  "資料庫連線失敗：" + err.Error(),
 		})
 		return
 	}
@@ -70,7 +70,7 @@ func PostInstall(c *gin.Context) {
 	}
 	c.JSON(200, gin.H{
 		"code": 200,
-		"msg":  "安装成功",
+		"msg":  "安裝成功",
 	})
 }
 func install() (bool, error) {
@@ -78,7 +78,7 @@ func install() (bool, error) {
 	isExit, _ := tools.IsFileExist(common.MysqlConf)
 	dataExit, _ := tools.IsFileExist(sqlFile)
 	if !isExit || !dataExit {
-		return false, errors.New("config/mysql.json 数据库配置文件或者数据库文件go-fly.sql不存在")
+		return false, errors.New("config/mysql.json 資料庫設定檔或資料庫檔案 go-fly.sql 不存在")
 	}
 	sqls, _ := ioutil.ReadFile(sqlFile)
 	sqlArr := strings.Split(string(sqls), "|")

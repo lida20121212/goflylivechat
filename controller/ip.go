@@ -12,7 +12,7 @@ func PostIpblack(c *gin.Context) {
 	if ip == "" {
 		c.JSON(200, gin.H{
 			"code": 400,
-			"msg":  "请输入IP!",
+			"msg":  "請輸入 IP！",
 		})
 		return
 	}
@@ -20,7 +20,7 @@ func PostIpblack(c *gin.Context) {
 	models.CreateIpblack(ip, kefuId.(string))
 	c.JSON(200, gin.H{
 		"code": 200,
-		"msg":  "添加黑名单成功!",
+		"msg":  "加入黑名單成功！",
 	})
 }
 func DelIpblack(c *gin.Context) {
@@ -28,14 +28,14 @@ func DelIpblack(c *gin.Context) {
 	if ip == "" {
 		c.JSON(200, gin.H{
 			"code": 400,
-			"msg":  "请输入IP!",
+			"msg":  "請輸入 IP！",
 		})
 		return
 	}
 	models.DeleteIpblackByIp(ip)
 	c.JSON(200, gin.H{
 		"code": 200,
-		"msg":  "删除黑名单成功!",
+		"msg":  "移除黑名單成功！",
 	})
 }
 func GetIpblacks(c *gin.Context) {

@@ -1,9 +1,9 @@
-<html lang="en">
+<html lang="zh-Hant">
 <head>
     <meta charset="utf-8">
     <meta name="renderer" content="webkit">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-    <title>Mobile Agent - GOFLY</title>
+    <title>永利客服小微</title>
     <link rel="stylesheet" href="/static/cdn/element-ui/2.15.1/theme-chalk/index.min.css">
     <script src="/static/cdn/vue/2.6.11/vue.min.js"></script>
     <script src="/static/cdn/element-ui/2.15.1/index.js"></script>
@@ -454,21 +454,21 @@
             <header class="mobile-topbar">
                 <el-avatar :size="36" :src="kfConfig.avator"></el-avatar>
                 <div class="topbar-main">
-                    <div class="topbar-title">Mobile Agent</div>
-                    <div class="topbar-subtitle"><{kfConfig.displayName || kfConfig.name || 'Agent'}> - <{connectionLabel}></div>
+                    <div class="topbar-title">永利客服小微</div>
+                    <div class="topbar-subtitle"><{kfConfig.displayName || kfConfig.name || '坐席'}> - <{connectionLabel}></div>
                 </div>
-                <button class="icon-action" type="button" @click="refreshVisitors" title="Refresh">
+                <button class="icon-action" type="button" @click="refreshVisitors" title="重新整理">
                     <i class="el-icon-refresh"></i>
                 </button>
-                <button class="icon-action" type="button" @click="logout" title="Logout">
+                <button class="icon-action" type="button" @click="logout" title="登出">
                     <i class="el-icon-switch-button"></i>
                 </button>
             </header>
 
             <div class="list-toolbar">
                 <el-radio-group v-model="listMode" size="small" @change="switchListMode">
-                    <el-radio-button label="online">Online</el-radio-button>
-                    <el-radio-button label="recent">Recent</el-radio-button>
+                    <el-radio-button label="online">在線</el-radio-button>
+                    <el-radio-button label="recent">最近</el-radio-button>
                 </el-radio-group>
             </div>
 
@@ -485,15 +485,15 @@
                     <div class="visitor-main">
                         <div class="visitor-name-row">
                             <div class="visitor-name"><{visitorName(item)}></div>
-                            <span class="visitor-status" :class="{'offline': !visitorOnline(item)}"><{visitorOnline(item) ? 'Online' : 'Offline'}></span>
+                            <span class="visitor-status" :class="{'offline': !visitorOnline(item)}"><{visitorOnline(item) ? '在線' : '離線'}></span>
                         </div>
-                        <div class="visitor-last"><{item.last_message || 'No messages yet'}></div>
+                        <div class="visitor-last"><{item.last_message || '尚無訊息'}></div>
                     </div>
                     <i class="el-icon-arrow-right"></i>
                 </div>
 
                 <div class="empty-state" v-show="activeVisitors.length === 0">
-                    No visitors
+                    目前沒有訪客
                 </div>
 
                 <div style="padding: 12px;" v-show="listMode === 'recent' && visitorCount > visitorPageSize">
@@ -512,24 +512,24 @@
 
         <section class="chat-page" v-show="view === 'chat'">
             <header class="chat-header">
-                <button class="icon-action" type="button" @click="backToList" title="Back">
+                <button class="icon-action" type="button" @click="backToList" title="返回">
                     <i class="el-icon-arrow-left"></i>
                 </button>
                 <div class="chat-title-wrap">
-                    <div class="chat-title"><{chatTitle || 'Visitor'}></div>
-                    <div class="chat-subtitle"><{connectionState === 'online' ? (chatInputing || visitor.status || 'Ready') : connectionLabel}></div>
+                    <div class="chat-title"><{chatTitle || '訪客'}></div>
+                    <div class="chat-subtitle"><{connectionState === 'online' ? (chatInputing || visitor.status || '準備就緒') : connectionLabel}></div>
                 </div>
-                <button class="icon-action" type="button" @click="infoPanel = true" title="Info">
+                <button class="icon-action" type="button" @click="infoPanel = true" title="資料">
                     <i class="el-icon-user"></i>
                 </button>
-                <button class="icon-action" type="button" @click="replyPanel = true" title="Replies">
+                <button class="icon-action" type="button" @click="replyPanel = true" title="快捷回覆">
                     <i class="el-icon-chat-dot-square"></i>
                 </button>
             </header>
 
             <main class="message-list" ref="messageList">
                 <div class="load-more" v-show="showLoadMore">
-                    <el-button size="mini" round @click="getHistoryMessage">Load more</el-button>
+                    <el-button size="mini" round @click="getHistoryMessage">載入更多</el-button>
                 </div>
 
                 <div v-for="(msg, index) in msgList" :key="index">
@@ -545,26 +545,23 @@
                 </div>
 
                 <div class="empty-state" v-show="currentGuest && msgList.length === 0">
-                    No messages
+                    尚無訊息
                 </div>
             </main>
 
             <footer class="composer">
                 <div class="composer-tools">
-                    <button class="tool-btn" type="button" @click="pickImage" title="Image">
+                    <button class="tool-btn" type="button" @click="pickImage" title="圖片">
                         <i class="el-icon-picture"></i>
                     </button>
-                    <button class="tool-btn" type="button" @click="pickFile" title="File">
-                        <i class="el-icon-upload"></i>
-                    </button>
-                    <button class="tool-btn" type="button" @click="replyPanel = true" title="Replies">
+                    <button class="tool-btn" type="button" @click="replyPanel = true" title="快捷回覆">
                         <i class="el-icon-document-copy"></i>
                     </button>
                     <span class="tool-fill"></span>
-                    <button class="tool-btn" type="button" @click="transferPanel = true; loadOtherKefus()" title="Transfer">
+                    <button class="tool-btn" type="button" @click="transferPanel = true; loadOtherKefus()" title="轉接">
                         <i class="el-icon-position"></i>
                     </button>
-                    <button class="tool-btn" type="button" @click="confirmCloseVisitor" title="End">
+                    <button class="tool-btn" type="button" @click="confirmCloseVisitor" title="結束">
                         <i class="el-icon-close"></i>
                     </button>
                 </div>
@@ -572,13 +569,12 @@
                     <el-input
                         type="textarea"
                         :autosize="{ minRows: 1, maxRows: 4 }"
-                        placeholder="Type a message"
+                        placeholder="請輸入訊息"
                         v-model="messageContent">
                     </el-input>
-                    <el-button class="send-btn" type="primary" :disabled="sendDisabled || !currentGuest" @click="chatToUser">Send</el-button>
+                    <el-button class="send-btn" type="primary" :disabled="sendDisabled || !currentGuest" @click="chatToUser">送出</el-button>
                 </div>
                 <input ref="imageInput" class="file-input" type="file" accept="image/gif,image/jpeg,image/jpg,image/png" @change="uploadImageSelected">
-                <input ref="fileInput" class="file-input" type="file" @change="uploadFileSelected">
             </footer>
         </section>
     </div>
@@ -586,12 +582,12 @@
     <div class="mobile-mask" v-show="infoPanel" @click="infoPanel = false"></div>
     <aside class="bottom-panel" v-show="infoPanel">
         <div class="panel-header">
-            <div class="panel-title">Visitor Info</div>
+            <div class="panel-title">訪客資料</div>
             <el-button type="text" icon="el-icon-close" @click="infoPanel = false"></el-button>
         </div>
         <div class="panel-body">
             <div class="info-row">
-                <div class="info-label">Name</div>
+                <div class="info-label">名稱</div>
                 <div class="info-value"><{visitor.name || chatTitle || '-'}></div>
             </div>
             <div class="info-row">
@@ -599,19 +595,19 @@
                 <div class="info-value"><{visitor.source_ip || '-'}></div>
             </div>
             <div class="info-row">
-                <div class="info-label">Location</div>
+                <div class="info-label">地區</div>
                 <div class="info-value"><{visitor.city || '-'}></div>
             </div>
             <div class="info-row">
-                <div class="info-label">First Visit</div>
+                <div class="info-label">首次來訪</div>
                 <div class="info-value"><{visitor.created_at || '-'}></div>
             </div>
             <div class="info-row">
-                <div class="info-label">Last Active</div>
+                <div class="info-label">最後活躍</div>
                 <div class="info-value"><{visitor.updated_at || '-'}></div>
             </div>
             <div class="info-row">
-                <div class="info-label">Referrer</div>
+                <div class="info-label">來源頁</div>
                 <div class="info-value"><{visitor.refer || '-'}></div>
             </div>
             <div class="info-row" v-for="item in visitorExtra" :key="item.key">
@@ -620,19 +616,19 @@
             </div>
         </div>
         <div class="panel-actions">
-            <el-button type="warning" plain @click="addIpblack(visitor.source_ip)">Blacklist</el-button>
-            <el-button @click="infoPanel = false">Done</el-button>
+            <el-button type="warning" plain @click="addIpblack(visitor.source_ip)">加入黑名單</el-button>
+            <el-button @click="infoPanel = false">完成</el-button>
         </div>
     </aside>
 
     <div class="mobile-mask" v-show="replyPanel" @click="replyPanel = false"></div>
     <aside class="bottom-panel" v-show="replyPanel">
         <div class="panel-header">
-            <div class="panel-title">Quick Replies</div>
+            <div class="panel-title">快捷回覆</div>
             <el-button type="text" icon="el-icon-close" @click="replyPanel = false"></el-button>
         </div>
         <div class="panel-body">
-            <el-input class="reply-search" size="small" placeholder="Search replies" v-model="replySearch" @keyup.enter.native="searchReply">
+            <el-input class="reply-search" size="small" placeholder="搜尋快捷回覆" v-model="replySearch" @keyup.enter.native="searchReply">
                 <el-button slot="append" icon="el-icon-search" @click="searchReply"></el-button>
             </el-input>
 
@@ -644,7 +640,7 @@
             </div>
 
             <div class="empty-state" v-show="visibleReplys.length === 0">
-                No replies
+                目前沒有快捷回覆
             </div>
         </div>
     </aside>
@@ -652,7 +648,7 @@
     <div class="mobile-mask" v-show="transferPanel" @click="transferPanel = false"></div>
     <aside class="bottom-panel" v-show="transferPanel">
         <div class="panel-header">
-            <div class="panel-title">Transfer</div>
+            <div class="panel-title">轉接</div>
             <el-button type="text" icon="el-icon-close" @click="transferPanel = false"></el-button>
         </div>
         <div class="panel-body transfer-list">
@@ -661,10 +657,10 @@
                 :key="kefu.name"
                 plain
                 @click="transKefuVisitor(kefu.name, currentGuest)">
-                <{kefu.nickname || kefu.name}> - <{kefu.status || 'offline'}>
+                <{kefu.nickname || kefu.name}> - <{kefu.status === 'online' ? '在線' : '離線'}>
             </el-button>
             <div class="empty-state" v-show="otherKefus.length === 0">
-                No other agents
+                目前沒有其他坐席
             </div>
         </div>
     </aside>
@@ -747,15 +743,15 @@
             },
             connectionLabel: function () {
                 if (this.connectionState === "online") {
-                    return "Online";
+                    return "在線";
                 }
                 if (this.connectionState === "reconnecting") {
-                    return "Reconnecting";
+                    return "重新連線中";
                 }
                 if (this.connectionState === "offline") {
-                    return "Offline";
+                    return "離線";
                 }
-                return "Connecting";
+                return "連線中";
             }
         },
         methods: {
@@ -808,7 +804,7 @@
                     },
                     error: function () {
                         _this.$message({
-                            message: "Network error",
+                            message: "網路異常",
                             type: 'error'
                         });
                     }
@@ -819,8 +815,8 @@
                 this.sendAjax("/kefuinfo", "GET", {}, function (data) {
                     var result = data.result || {};
                     _this.kfConfig.id = result.username || result.name || "";
-                    _this.kfConfig.name = result.username || result.name || "";
-                    _this.kfConfig.displayName = result.nickname || result.username || result.name || "";
+                    _this.kfConfig.name = "永利客服小微";
+                    _this.kfConfig.displayName = "永利客服小微";
                     _this.kfConfig.avator = result.avator || "";
                     _this.initConn();
                 });
@@ -924,7 +920,7 @@
                 }
                 this.reconnectNoticeAt = now;
                 this.$message({
-                    message: "Connection lost, reconnecting",
+                    message: "連線中斷，正在重新連線",
                     type: "warning",
                     duration: 1800
                 });
@@ -950,8 +946,8 @@
                 }
                 switch (redata.type) {
                     case "close":
-                        this.$alert("This agent account signed in elsewhere.", "Notice", {
-                            confirmButtonText: "OK",
+                        this.$alert("此坐席帳號已在其他地方登入。", "通知", {
+                            confirmButtonText: "確定",
                             callback: this.logout
                         });
                         return;
@@ -1067,7 +1063,7 @@
                     }
                 }
                 if (this.currentGuest === vid) {
-                    this.visitor.status = "Offline";
+                    this.visitor.status = "離線";
                 }
             },
             handleOnlineUsers: function (retData) {
@@ -1075,7 +1071,7 @@
                 for (var i = 0; i < retData.length; i++) {
                     this.usersMap[retData[i].uid] = retData[i].username;
                     if (!retData[i].last_message) {
-                        retData[i].last_message = "new visitor";
+                        retData[i].last_message = "新訪客";
                     }
                     retData[i].hidden_new_message = true;
                 }
@@ -1086,7 +1082,7 @@
                     return;
                 }
                 if (retData.from === this.currentGuest) {
-                    this.chatInputing = retData.content ? "Typing: " + retData.content + "..." : "";
+                    this.chatInputing = retData.content ? "正在輸入：" + retData.content + "..." : "";
                 }
                 for (var i = 0; i < this.users.length; i++) {
                     if (this.users[i].uid === retData.from) {
@@ -1143,7 +1139,7 @@
                 return item.uid || item.visitor_id || "";
             },
             visitorName: function (item) {
-                return item.username || item.name || item.visitor_id || item.uid || "Visitor";
+                return item.username || item.name || item.visitor_id || item.uid || "訪客";
             },
             visitorAvatar: function (item) {
                 return item.avator || "/static/images/4.jpg";
@@ -1232,7 +1228,7 @@
                     _this.visitor = r;
                     _this.visitor.created_at = r.created_at ? formatDate(r.created_at) : "";
                     _this.visitor.updated_at = r.updated_at ? formatDate(r.updated_at) : "";
-                    _this.visitor.status = r.status === 1 ? "Online" : "Offline";
+                    _this.visitor.status = r.status === 1 ? "在線" : "離線";
                     _this.chatTitle = r.name || _this.chatTitle;
                     _this.visitorExtra = [];
                     if (r.extra) {
@@ -1292,10 +1288,6 @@
                 this.$refs.imageInput.value = "";
                 this.$refs.imageInput.click();
             },
-            pickFile: function () {
-                this.$refs.fileInput.value = "";
-                this.$refs.fileInput.click();
-            },
             uploadImageSelected: function (event) {
                 var file = event.target.files[0];
                 if (!file || !filter(file)) {
@@ -1314,42 +1306,10 @@
                     mimeType: "multipart/form-data",
                     success: function (res) {
                         if (res.code !== 200) {
-                            _this.$message({message: res.msg || "Upload failed", type: "error"});
+                            _this.$message({message: res.msg || "上傳失敗", type: "error"});
                             return;
                         }
                         _this.messageContent += "img[/" + res.result.path + "]";
-                        _this.chatToUser();
-                    }
-                });
-            },
-            uploadFileSelected: function (event) {
-                var file = event.target.files[0];
-                if (!file) {
-                    return;
-                }
-                var _this = this;
-                var formData = new FormData();
-                formData.append("realfile", file);
-                $.ajax({
-                    url: "/uploadfile",
-                    type: "POST",
-                    data: formData,
-                    contentType: false,
-                    processData: false,
-                    dataType: "JSON",
-                    mimeType: "multipart/form-data",
-                    success: function (res) {
-                        if (res.code !== 200) {
-                            _this.$message({message: res.msg || "Upload failed", type: "error"});
-                            return;
-                        }
-                        var data = JSON.stringify({
-                            name: res.result.name,
-                            ext: res.result.ext,
-                            size: res.result.size,
-                            path: "/" + res.result.path
-                        });
-                        _this.messageContent += "attachment[" + data + "]";
                         _this.chatToUser();
                     }
                 });
@@ -1380,7 +1340,7 @@
                 }
                 var _this = this;
                 this.sendAjax("/ipblack", "POST", {ip: ip}, function (data) {
-                    _this.$message({message: data.msg || "Done", type: "success"});
+                    _this.$message({message: data.msg || "完成", type: "success"});
                 });
             },
             confirmCloseVisitor: function () {
@@ -1388,9 +1348,9 @@
                     return;
                 }
                 var _this = this;
-                this.$confirm("End this chat?", "Confirm", {
-                    confirmButtonText: "End",
-                    cancelButtonText: "Cancel",
+                this.$confirm("確定要結束此對話？", "確認", {
+                    confirmButtonText: "結束",
+                    cancelButtonText: "取消",
                     type: "warning"
                 }).then(function () {
                     _this.closeVisitor(_this.currentGuest);
@@ -1399,7 +1359,7 @@
             closeVisitor: function (visitorId) {
                 var _this = this;
                 this.sendAjax("/2/message_close", "GET", {visitor_id: visitorId}, function () {
-                    _this.$message({message: "Closed", type: "success"});
+                    _this.$message({message: "已結束", type: "success"});
                     _this.backToList();
                 });
             },
@@ -1415,7 +1375,7 @@
                     kefu_id: kefu,
                     visitor_id: visitorId
                 }, function () {
-                    _this.$message({message: "Transferred", type: "success"});
+                    _this.$message({message: "已轉接", type: "success"});
                     _this.transferPanel = false;
                     _this.backToList();
                 });

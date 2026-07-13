@@ -30,16 +30,16 @@
 
             <el-main class="mainMain">
                 <el-form :model="modifyPass" label-width="80px">
-                    <el-form-item label="账户">
+                    <el-form-item label="帳號">
                         <el-input v-model="kefuInfo.username"></el-input>
                     </el-form-item>
-                    <el-form-item label="昵称">
+                    <el-form-item label="暱稱">
                         <el-input v-model="kefuInfo.nickname"></el-input>
                     </el-form-item>
-                    <el-form-item label="原头像">
+                    <el-form-item label="目前頭像">
                         <el-avatar  :size="120" :src="kefuInfo.avator"></el-avatar>
                     </el-form-item>
-                    <el-form-item label="新头像">
+                    <el-form-item label="新頭像">
                         <el-upload
                                 class="avatar-uploader"
                                 action="/uploadimg"
@@ -51,7 +51,7 @@
                         </el-upload>
                     </el-form-item>
                     <el-form-item>
-                        <el-button type="primary" @click="setModifyAvatar()">保存</el-button>
+                        <el-button type="primary" @click="setModifyAvatar()">儲存</el-button>
                     </el-form-item>
                 </el-form>
             </el-main>

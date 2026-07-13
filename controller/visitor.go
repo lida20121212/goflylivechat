@@ -201,6 +201,9 @@ func GetVisitorMessage(c *gin.Context) {
 		item["visitor_name"] = message.VisitorName
 		item["visitor_avator"] = message.VisitorAvator
 		item["kefu_name"] = message.KefuName
+		if message.MesType == "kefu" {
+			item["kefu_name"] = common.PublicKefuName
+		}
 		item["kefu_avator"] = message.KefuAvator
 		result = append(result, item)
 
@@ -284,7 +287,7 @@ func GetKefusVisitorOnlines(c *gin.Context) {
 	for _, user := range users {
 		user.LastMessage = temp[user.Uid]
 		if user.LastMessage == "" {
-			user.LastMessage = "new visitor"
+			user.LastMessage = "新訪客"
 		}
 	}
 

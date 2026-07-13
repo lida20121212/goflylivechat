@@ -15,6 +15,11 @@ import (
 	"time"
 )
 
+func isAllowedChatContent(content string) bool {
+	content = strings.ToLower(content)
+	return !strings.Contains(content, "attachment[") && !strings.Contains(content, "face[")
+}
+
 func SendMessageV2(c *gin.Context) {
 	fromId := c.PostForm("from_id")
 	toId := c.PostForm("to_id")
@@ -23,7 +28,14 @@ func SendMessageV2(c *gin.Context) {
 	if content == "" {
 		c.JSON(200, gin.H{
 			"code": 400,
-			"msg":  "内容不能为空",
+			"msg":  "內容不能為空",
+		})
+		return
+	}
+	if !isAllowedChatContent(content) {
+		c.JSON(200, gin.H{
+			"code": 400,
+			"msg":  "僅支援文字與圖片",
 		})
 		return
 	}
@@ -31,7 +43,7 @@ func SendMessageV2(c *gin.Context) {
 	if !tools.LimitFreqSingle("sendmessage:"+c.ClientIP(), 1, 2) {
 		c.JSON(200, gin.H{
 			"code": 400,
-			"msg":  c.ClientIP() + "发送频率过快",
+			"msg":  c.ClientIP() + " 傳送頻率過快",
 		})
 		return
 	}
@@ -48,7 +60,7 @@ func SendMessageV2(c *gin.Context) {
 	if kefuInfo.ID == 0 || vistorInfo.ID == 0 {
 		c.JSON(200, gin.H{
 			"code": 400,
-			"msg":  "用户不存在",
+			"msg":  "使用者不存在",
 		})
 		return
 	}
@@ -125,7 +137,14 @@ func SendKefuMessage(c *gin.Context) {
 	if content == "" {
 		c.JSON(200, gin.H{
 			"code": 400,
-			"msg":  "内容不能为空",
+			"msg":  "內容不能為空",
+		})
+		return
+	}
+	if !isAllowedChatContent(content) {
+		c.JSON(200, gin.H{
+			"code": 400,
+			"msg":  "僅支援文字與圖片",
 		})
 		return
 	}
@@ -133,7 +152,7 @@ func SendKefuMessage(c *gin.Context) {
 	if !tools.LimitFreqSingle("sendmessage:"+c.ClientIP(), 1, 2) {
 		c.JSON(200, gin.H{
 			"code": 400,
-			"msg":  c.ClientIP() + "发送频率过快",
+			"msg":  c.ClientIP() + " 傳送頻率過快",
 		})
 		return
 	}
@@ -145,7 +164,7 @@ func SendKefuMessage(c *gin.Context) {
 	if kefuInfo.ID == 0 || vistorInfo.ID == 0 {
 		c.JSON(200, gin.H{
 			"code": 400,
-			"msg":  "用户不存在",
+			"msg":  "使用者不存在",
 		})
 		return
 	}
@@ -169,7 +188,7 @@ func SendVisitorNotice(c *gin.Context) {
 	if notice == "" {
 		c.JSON(200, gin.H{
 			"code": 400,
-			"msg":  "msg不能为空",
+			"msg":  "訊息不能為空",
 		})
 		return
 	}
@@ -188,7 +207,7 @@ func SendCloseMessageV2(c *gin.Context) {
 	if visitorId == "" {
 		c.JSON(200, gin.H{
 			"code": 400,
-			"msg":  "visitor_id不能为空",
+			"msg":  "visitor_id 不能為空",
 		})
 		return
 	}
@@ -209,7 +228,7 @@ func UploadImg(c *gin.Context) {
 	if err != nil {
 		c.JSON(200, gin.H{
 			"code": 400,
-			"msg":  "上传失败!",
+			"msg":  "上傳失敗！",
 		})
 		return
 	} else {
@@ -218,7 +237,7 @@ func UploadImg(c *gin.Context) {
 		if fileExt != ".png" && fileExt != ".jpg" && fileExt != ".gif" && fileExt != ".jpeg" {
 			c.JSON(200, gin.H{
 				"code": 400,
-				"msg":  "上传失败!只允许png,jpg,gif,jpeg文件",
+				"msg":  "上傳失敗！僅支援 png、jpg、gif、jpeg 圖片",
 			})
 			return
 		}
@@ -236,7 +255,7 @@ func UploadImg(c *gin.Context) {
 		c.SaveUploadedFile(f, filepath)
 		c.JSON(200, gin.H{
 			"code": 200,
-			"msg":  "上传成功!",
+			"msg":  "上傳成功！",
 			"result": gin.H{
 				"path": filepath,
 			},
@@ -244,43 +263,10 @@ func UploadImg(c *gin.Context) {
 	}
 }
 func UploadFile(c *gin.Context) {
-	f, err := c.FormFile("realfile")
-	if err != nil {
-		c.JSON(200, gin.H{
-			"code": 400,
-			"msg":  "上传失败!",
-		})
-		return
-	} else {
-
-		fileExt := strings.ToLower(path.Ext(f.Filename))
-		if f.Size >= 90*1024*1024 {
-			c.JSON(200, gin.H{
-				"code": 400,
-				"msg":  "上传失败!不允许超过90M",
-			})
-			return
-		}
-
-		fileName := tools.Md5(fmt.Sprintf("%s%s", f.Filename, time.Now().String()))
-		fildDir := fmt.Sprintf("%s%d%s/", common.Upload, time.Now().Year(), time.Now().Month().String())
-		isExist, _ := tools.IsFileExist(fildDir)
-		if !isExist {
-			os.Mkdir(fildDir, os.ModePerm)
-		}
-		filepath := fmt.Sprintf("%s%s%s", fildDir, fileName, fileExt)
-		c.SaveUploadedFile(f, filepath)
-		c.JSON(200, gin.H{
-			"code": 200,
-			"msg":  "上传成功!",
-			"result": gin.H{
-				"path": filepath,
-				"ext":  fileExt,
-				"size": f.Size,
-				"name": f.Filename,
-			},
-		})
-	}
+	c.JSON(200, gin.H{
+		"code": 400,
+		"msg":  "僅支援文字與圖片",
+	})
 }
 func GetMessagesV2(c *gin.Context) {
 	visitorId := c.Query("visitor_id")
@@ -300,7 +286,7 @@ func GetMessagesV2(c *gin.Context) {
 		chatMessage.Content = message.Content
 		chatMessage.MesType = message.MesType
 		if message.MesType == "kefu" {
-			chatMessage.Name = kefu.Nickname
+			chatMessage.Name = common.PublicKefuName
 			chatMessage.Avator = kefu.Avator
 		} else {
 			chatMessage.Name = visitor.Name
@@ -324,6 +310,11 @@ func GetMessagespages(c *gin.Context) {
 	}
 	count := models.CountMessage("visitor_id = ?", visitorId)
 	list := models.FindMessageByPage(uint(page), uint(pageSize), "message.visitor_id = ?", visitorId)
+	for _, item := range list {
+		if item.MesType == "kefu" {
+			item.KefuName = common.PublicKefuName
+		}
+	}
 	c.JSON(200, gin.H{
 		"code": 200,
 		"msg":  "ok",

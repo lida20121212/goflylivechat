@@ -31,37 +31,37 @@
             chatEndpoint: "",
             configList:[
                     {
-                        "conf_name": "Announcement",
+                        "conf_name": "公告",
                         "conf_key": "AllNotice",
                         "conf_value":"",
                     },
                     {
 
-                        "conf_name": "Offline Message",
+                        "conf_name": "離線訊息",
                         "conf_key": "OfflineMessage",
                         "conf_value":"",
                     },
                     {
 
-                        "conf_name": "Welcome Message",
+                        "conf_name": "歡迎訊息",
                         "conf_key": "WelcomeMessage",
                         "conf_value":"",
                     },
                     {
 
-                        "conf_name": "Email Address (SMTP)",
+                        "conf_name": "SMTP 伺服器",
                         "conf_key": "NoticeEmailSmtp",
                         "conf_value":"",
                     },
                     {
 
-                        "conf_name": "Email Account",
+                        "conf_name": "Email 帳號",
                         "conf_key": "NoticeEmailAddress",
                         "conf_value":"",
                     },
                     {
 
-                        "conf_name": "Email Password (SMTP)",
+                        "conf_name": "Email 密碼（SMTP）",
                         "conf_key": "NoticeEmailPassword",
                         "conf_value":"",
                     }
@@ -122,7 +122,7 @@
                 this.sendAjax("/config","POST",{key:key,value:value},function(result){
                     _this.getConfigList();
                     _this.$message({
-                        message: "success！",
+                        message: "設定已儲存！",
                         type: 'success'
                     });
                 });
@@ -138,7 +138,7 @@
                     password:_this.kefuInfo.password,
                 },function(result){
                     _this.$message({
-                        message: "success",
+                        message: "儲存成功",
                         type: 'success'
                     });
                 });
@@ -157,7 +157,7 @@
             beforeAvatarUpload(file) {
                 var isLt2M = file.size / 1024 / 1024 < 1;
                 if (!isLt2M) {
-                    this.$message.error('上传头像图片大小不能超过 1MB!');
+                    this.$message.error('頭像圖片大小不能超過 1MB！');
                 }
                 return isLt2M;
             },
@@ -173,7 +173,7 @@
             copyText(text){
                 copyText(text);
                 this.$message({
-                    message: "success",
+                    message: "已複製",
                     type: 'success'
                 });
             },

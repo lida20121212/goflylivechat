@@ -13,7 +13,7 @@ CREATE TABLE `user` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 TRUNCATE TABLE `user`;
 INSERT INTO `user` (`id`, `name`, `password`, `nickname`, `created_at`, `updated_at`, `deleted_at`, `avator`) VALUE
-(1, 'agent', 'b33aed8f3134996703dc39f9a7c95783', 'Open Source LiveChat Support', '2020-06-27 19:32:41', '2020-07-04 09:32:20', NULL, '/static/images/4.jpg');
+(1, 'agent', 'b33aed8f3134996703dc39f9a7c95783', '永利客服小微', '2020-06-27 19:32:41', '2020-07-04 09:32:20', NULL, '/static/images/4.jpg');
 
 DROP TABLE IF EXISTS `visitor`;
 CREATE TABLE `visitor` (
@@ -76,11 +76,11 @@ CREATE TABLE `config` (
  KEY `user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 INSERT INTO `config` (`id`, `conf_name`, `conf_key`, `conf_value`, `user_id`) VALUES
-(NULL, 'Announcement', 'AllNotice', 'Open source customer support system at your service','agent');
+(NULL, '公告', 'AllNotice', '歡迎使用永利客服。','agent');
 INSERT INTO `config` (`id`, `conf_name`, `conf_key`, `conf_value`, `user_id`) VALUES
-(NULL, 'Offline Message', 'OfflineMessage', 'I am currently offline and will reply to you later!','agent');
+(NULL, '離線訊息', 'OfflineMessage', '目前客服暫時離線，請留下訊息，我們會盡快回覆您。','agent');
 INSERT INTO `config` (`id`, `conf_name`, `conf_key`, `conf_value`, `user_id`) VALUES
-(NULL, 'Welcome Message', 'WelcomeMessage', 'How may I help you?','agent');
+(NULL, '歡迎訊息', 'WelcomeMessage', '您好，這裡是永利客服小微，請問有什麼可以幫您？','agent');
 INSERT INTO `config` (`id`, `conf_name`, `conf_key`, `conf_value`, `user_id`) VALUES
 (NULL, 'Email Address (SMTP)', 'NoticeEmailSmtp', '','agent');
 INSERT INTO `config` (`id`, `conf_name`, `conf_key`, `conf_value`, `user_id`) VALUES

@@ -1,9 +1,9 @@
-<html lang="en">
+<html lang="zh-Hant">
 <head>
     <meta charset="utf-8">
     <meta name="renderer" content="webkit">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <title>GoflyLiveChat - Open Source Live Chat</title>
+    <title>永利客服小微</title>
     <link rel="stylesheet" href="/static/cdn/element-ui/2.15.1/theme-chalk/index.min.css">
     <script src="/static/cdn/vue/2.6.11/vue.min.js"></script>
     <script src="/static/cdn/element-ui/2.15.1/index.js"></script>
@@ -52,45 +52,45 @@
 <div id="app" class="signin">
     <template>
         <div class="loginHtml">
-            <h1 class="loginTitle">GOFLY LIVE CHAT</h1>
+            <h1 class="loginTitle">永利客服小微</h1>
             <el-form :model="form" :rules="rules" ref="loginForm" v-show="!showRegHtml">
                 <el-form-item prop="account">
-                    <el-input v-model="form.account" placeholder="Enter your username"></el-input>
+                    <el-input v-model="form.account" placeholder="請輸入帳號"></el-input>
                 </el-form-item>
                 <el-form-item prop="password">
-                    <el-input show-password v-on:keyup.enter.native="handleLogin('loginForm')" v-model="form.password" placeholder="Enter your password"></el-input>
+                    <el-input show-password v-on:keyup.enter.native="handleLogin('loginForm')" v-model="form.password" placeholder="請輸入密碼"></el-input>
                 </el-form-item>
                 <el-form-item>
-                    <el-button style="width: 100%" type="primary" @click="handleLogin('loginForm')">Log In</el-button>
+                    <el-button style="width: 100%" type="primary" @click="handleLogin('loginForm')">登入</el-button>
                 </el-form-item>
                 <el-form-item>
-                    <el-button style="width: 100%" @click="showRegHtml=true">Create New Account</el-button>
+                    <el-button style="width: 100%" @click="showRegHtml=true">建立新帳號</el-button>
                 </el-form-item>
             </el-form>
 
             <el-form :model="form" :rules="rules" ref="registerForm" v-show="showRegHtml">
                 <el-form-item prop="account">
-                    <el-input v-model="form.account" placeholder="Choose a username"></el-input>
+                    <el-input v-model="form.account" placeholder="請設定帳號"></el-input>
                 </el-form-item>
                 <el-form-item prop="nickname">
-                    <el-input v-model="form.nickname" placeholder="Create a display name"></el-input>
+                    <el-input v-model="form.nickname" placeholder="請設定顯示名稱"></el-input>
                 </el-form-item>
                 <el-form-item prop="password">
-                    <el-input show-password v-model="form.password" placeholder="Create a password"></el-input>
+                    <el-input show-password v-model="form.password" placeholder="請設定密碼"></el-input>
                 </el-form-item>
                 <el-form-item prop="rePassword">
-                    <el-input show-password v-on:keyup.enter.native="handleRegister('registerForm')" v-model="form.rePassword" placeholder="Confirm password"></el-input>
+                    <el-input show-password v-on:keyup.enter.native="handleRegister('registerForm')" v-model="form.rePassword" placeholder="請再次輸入密碼"></el-input>
                 </el-form-item>
                 <el-form-item>
-                    <el-button style="width: 100%" type="primary" @click="handleRegister('registerForm')">Sign Up</el-button>
+                    <el-button style="width: 100%" type="primary" @click="handleRegister('registerForm')">註冊</el-button>
                 </el-form-item>
                 <el-form-item>
-                    <el-button style="width: 100%" @click="showRegHtml=false">Back to Login</el-button>
+                    <el-button style="width: 100%" @click="showRegHtml=false">返回登入</el-button>
                 </el-form-item>
             </el-form>
         </div>
 
-        <p class="copyright">GOFLY LIVE CHAT - Open Source Live Chat Platform</p>
+        <p class="copyright">永利客服小微</p>
     </template>
 </div>
 </body>
@@ -107,19 +107,19 @@
             },
             rules: {
                 account: [
-                    { required: true, message: 'Username is required', trigger: 'blur' },
-                    { min: 2, max: 20, message: 'Username must be 2-20 characters', trigger: 'blur' }
+                    { required: true, message: '請輸入帳號', trigger: 'blur' },
+                    { min: 2, max: 20, message: '帳號長度需為 2-20 個字元', trigger: 'blur' }
                 ],
                 nickname: [
-                    { required: true, message: 'DisplayName is required', trigger: 'blur' },
-                    { min: 1, max: 60, message: 'DisplayName must be 1-60 characters', trigger: 'blur' }
+                    { required: true, message: '請輸入顯示名稱', trigger: 'blur' },
+                    { min: 1, max: 60, message: '顯示名稱長度需為 1-60 個字元', trigger: 'blur' }
                 ],
                 password: [
-                    { required: true, message: 'Password is required', trigger: 'blur' },
-                    { min: 2, message: 'Password must be at least 2 characters', trigger: 'blur' }
+                    { required: true, message: '請輸入密碼', trigger: 'blur' },
+                    { min: 2, message: '密碼至少需要 2 個字元', trigger: 'blur' }
                 ],
                 rePassword: [
-                    { required: true, message: 'Please confirm your password', trigger: 'blur' },
+                    { required: true, message: '請再次輸入密碼', trigger: 'blur' },
                     { validator: this.validatePasswordMatch, trigger: 'blur' }
                 ]
             },
@@ -128,7 +128,7 @@
         methods: {
             validatePasswordMatch(rule, value, callback) {
                 if (value !== this.form.password) {
-                    callback(new Error('Passwords don\'t match'));
+                    callback(new Error('兩次輸入的密碼不一致'));
                 } else {
                     callback();
                 }
@@ -159,7 +159,7 @@
                 $.post("/check", data, (response) => {
                     if (response.code === 200) {
                         this.$message({
-                            message: 'Welcome back!',
+                            message: '登入成功',
                             type: 'success'
                         });
                         localStorage.setItem("token", response.result.token);
@@ -167,13 +167,13 @@
                         window.location.href = isMobile ? "/m/chat" : "/main";
                     } else {
                         this.$message({
-                            message: response.message || 'Invalid credentials',
+                            message: response.message || '帳號或密碼不正確',
                             type: 'error'
                         });
                     }
                 }).fail(() => {
                     this.$message({
-                        message: 'Connection error',
+                        message: '連線異常，請稍後再試',
                         type: 'error'
                     });
                 });
@@ -182,7 +182,7 @@
             register() {
                 if (this.form.password !== this.form.rePassword) {
                     this.$message({
-                        message: 'Passwords don\'t match',
+                        message: '兩次輸入的密碼不一致',
                         type: 'error'
                     });
                     return;
@@ -197,19 +197,19 @@
                 $.post("/register", data, (response) => {
                     if (response.code === 200) {
                         this.$message({
-                            message: 'Account created successfully!',
+                            message: '帳號建立成功',
                             type: 'success'
                         });
                         this.showRegHtml = false;
                     } else {
                         this.$message({
-                            message: response.msg || 'Registration failed',
+                            message: response.msg || '註冊失敗',
                             type: 'error'
                         });
                     }
                 }).fail(() => {
                     this.$message({
-                        message: 'Connection error',
+                        message: '連線異常，請稍後再試',
                         type: 'error'
                     });
                 });
