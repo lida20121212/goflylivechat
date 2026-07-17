@@ -2,6 +2,7 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
+	"goflylivechat/common"
 	"goflylivechat/models"
 	"goflylivechat/tools"
 	"goflylivechat/ws"
@@ -78,7 +79,7 @@ func GetKefuInfo(c *gin.Context) {
 	kefuName, _ := c.Get("kefu_name")
 	user := models.FindUser(kefuName.(string))
 	info := make(map[string]interface{})
-	info["avator"] = user.Avator
+	info["avator"] = common.KefuAvatar
 	info["username"] = user.Name
 	info["nickname"] = user.Nickname
 	info["uid"] = user.ID
@@ -111,7 +112,7 @@ func GetOtherKefuList(c *gin.Context) {
 		item := make(map[string]interface{})
 		item["name"] = kefu.Name
 		item["nickname"] = kefu.Nickname
-		item["avator"] = kefu.Avator
+		item["avator"] = common.KefuAvatar
 		item["status"] = "offline"
 		if ws.IsKefuOnline(kefu.Name) {
 			item["status"] = "online"
@@ -160,7 +161,7 @@ func PostKefuRegister(c *gin.Context) {
 	name := c.PostForm("username")
 	password := c.PostForm("password")
 	nickname := c.PostForm("nickname")
-	avatar := "/static/images/4.jpg"
+	avatar := common.KefuAvatar
 
 	if name == "" || password == "" {
 		c.JSON(http.StatusOK, gin.H{

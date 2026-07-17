@@ -287,7 +287,7 @@ func GetMessagesV2(c *gin.Context) {
 		chatMessage.MesType = message.MesType
 		if message.MesType == "kefu" {
 			chatMessage.Name = common.PublicKefuName
-			chatMessage.Avator = kefu.Avator
+			chatMessage.Avator = common.KefuAvatar
 		} else {
 			chatMessage.Name = visitor.Name
 			chatMessage.Avator = visitor.Avator
@@ -313,6 +313,7 @@ func GetMessagespages(c *gin.Context) {
 	for _, item := range list {
 		if item.MesType == "kefu" {
 			item.KefuName = common.PublicKefuName
+			item.KefuAvator = common.KefuAvatar
 		}
 	}
 	c.JSON(200, gin.H{

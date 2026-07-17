@@ -140,7 +140,7 @@ func VisitorMessage(visitorId, content string, kefuInfo models.User) {
 		Type: "message",
 		Data: ClientMessage{
 			Name:    common.PublicKefuName,
-			Avator:  kefuInfo.Avator,
+			Avator:  common.KefuAvatar,
 			Id:      kefuInfo.Name,
 			Time:    time.Now().Format("2006-01-02 15:04:05"),
 			ToId:    visitorId,

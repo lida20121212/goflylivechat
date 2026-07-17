@@ -57,6 +57,7 @@ func run() {
 	engine := gin.Default()
 	engine.LoadHTMLGlob("static/templates/*")
 	engine.Static("/static", "./static")
+	engine.StaticFile("/favicon.ico", "./static/images/logo.png")
 	engine.Use(middleware.SessionHandler())
 	engine.Use(middleware.CrossSite)
 

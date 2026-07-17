@@ -20,10 +20,13 @@ function getWsBaseUrl() {
 }
 //除去html标签
 function replaceHtml(str){
+    if (!str) {
+        return "";
+    }
     return str.replace(/<[^>]*>/g, '');
 }
 //浏览器桌面通知
-function notify(title, options, callback) {
+function notify(title, options, callback, requestPermission) {
 
     // 先检查浏览器是否支持
     if (!window.Notification) {
@@ -43,11 +46,11 @@ function notify(title, options, callback) {
                 notification.close();
             },3000);
         }
-    } else {
-        Notification.requestPermission().then( (permission) =>function(){
+    } else if (requestPermission === true) {
+        Notification.requestPermission().then(function(permission){
             console.log("请求浏览器notify权限:", permission);
             if (permission === 'granted') {
-                notification = new Notification(title, options); // 显示通知
+                var notification = new Notification(title, options); // 显示通知
                 if (notification && callback) {
                     notification.onclick = function (event) {
                         callback(notification, event);

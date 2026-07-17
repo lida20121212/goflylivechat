@@ -1,14 +1,14 @@
 const CHAT_WIDGET = {
     API_URL: "",
     AGENT_ID: "",
-    AUTO_OPEN: true,
+    AUTO_OPEN: false,
     DISPLAY_MODE: 1,
     USER_ID: "",
     USER_NAME: "",
     USER_AVATAR: "",
     isChatOpen: false,
     originalPageTitle: document.title,
-    chatWindowTitle: "永利客服",
+    chatWindowTitle: "線上客服",
     isOffline: false,
     iframeId: "chat-widget-iframe",
     containerId: "chat-widget-container"
@@ -152,7 +152,7 @@ CHAT_WIDGET.openChatWindow = function() {
         container.id = this.containerId;
         container.innerHTML = `
             <div id="chat-widget-header">
-                <span>永利客服</span>
+                <span>線上客服</span>
                 <span class="close-button">×</span>
             </div>
             <iframe id="${this.iframeId}" src="${this.buildChatUrl()}"></iframe>

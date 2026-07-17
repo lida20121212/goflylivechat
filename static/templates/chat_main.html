@@ -3,7 +3,7 @@
     <meta charset="utf-8">
     <meta name="description" content="">
     <meta name="author" content="">
-    <title>永利客服小微</title>
+    <title>線上客服</title>
     <link rel="stylesheet" href="/static/cdn/element-ui/2.15.1/theme-chalk/index.min.css">
     <script src="/static/cdn/vue/2.6.11/vue.min.js"></script>
     <script src="/static/cdn/element-ui/2.15.1/index.js"></script>
@@ -322,7 +322,7 @@
             chatInputing:"",
             kfConfig:{
                 id : "kf_1",
-                name : "永利客服小微",
+                name : "線上客服",
                 avator : "",
                 to_id : "",
             },
@@ -449,6 +449,10 @@
                 if(this.socket.readyState===1){
                     this.socketReady=true;
                     this.sendKefuOnline();
+                    return;
+                }
+                if(this.socket.readyState===0){
+                    this.socketReady=false;
                     return;
                 }
                 this.socketReady=false;
@@ -722,7 +726,7 @@
                     success: function(data) {
                         if(data.code==200 && data.result!=null){
                             _this.kfConfig.id=data.result.id;
-                            _this.kfConfig.name="永利客服小微";
+                            _this.kfConfig.name="線上客服";
                             _this.kfConfig.avator=data.result.avator;
                             _this.initConn();
                         }
@@ -1243,14 +1247,21 @@
                         "token": localStorage.getItem("token")
                     },
                     error:function(res){
-                        var data=JSON.parse(res.responseText);
-                        console.log(data);
-                        if(data.code!=200){
-                            _this.$message({
-                                message: data.msg,
-                                type: 'error'
-                            });
+                        var data={};
+                        if(res&&res.responseText){
+                            try{
+                                data=JSON.parse(res.responseText);
+                            }catch(e){
+                                data={msg:res.statusText||"網路連線異常"};
+                            }
+                        }else{
+                            data={msg:"網路連線異常"};
                         }
+                        console.log(data);
+                        _this.$message({
+                            message: data.msg||"網路連線異常",
+                            type: 'error'
+                        });
                     },
                     success: function(data) {
                         if(data.code!=200){

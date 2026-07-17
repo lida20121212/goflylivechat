@@ -3,7 +3,7 @@
     <meta charset="utf-8">
     <meta name="renderer" content="webkit">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <title>永利客服小微</title>
+    <title>線上客服</title>
     <link rel="stylesheet" href="/static/cdn/element-ui/2.15.1/theme-chalk/index.min.css">
     <script src="/static/cdn/vue/2.6.11/vue.min.js"></script>
     <script src="/static/cdn/element-ui/2.15.1/index.js"></script>
@@ -52,7 +52,7 @@
 <div id="app" class="signin">
     <template>
         <div class="loginHtml">
-            <h1 class="loginTitle">永利客服小微</h1>
+            <h1 class="loginTitle">線上客服</h1>
             <el-form :model="form" :rules="rules" ref="loginForm" v-show="!showRegHtml">
                 <el-form-item prop="account">
                     <el-input v-model="form.account" placeholder="請輸入帳號"></el-input>
@@ -62,9 +62,6 @@
                 </el-form-item>
                 <el-form-item>
                     <el-button style="width: 100%" type="primary" @click="handleLogin('loginForm')">登入</el-button>
-                </el-form-item>
-                <el-form-item>
-                    <el-button style="width: 100%" @click="showRegHtml=true">建立新帳號</el-button>
                 </el-form-item>
             </el-form>
 
@@ -90,7 +87,7 @@
             </el-form>
         </div>
 
-        <p class="copyright">永利客服小微</p>
+        <p class="copyright">線上客服</p>
     </template>
 </div>
 </body>

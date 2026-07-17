@@ -3,7 +3,7 @@
     <meta charset="utf-8">
     <meta name="renderer" content="webkit">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-    <title>永利客服小微</title>
+    <title>線上客服</title>
     <link rel="stylesheet" href="/static/cdn/element-ui/2.15.1/theme-chalk/index.min.css">
     <script src="/static/cdn/vue/2.6.11/vue.min.js"></script>
     <script src="/static/cdn/element-ui/2.15.1/index.js"></script>
@@ -27,6 +27,11 @@
         }
         [v-cloak] {
             display: none;
+        }
+        .el-avatar > img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
         #app {
             height: calc(var(--vh, 1vh) * 100);
@@ -454,7 +459,7 @@
             <header class="mobile-topbar">
                 <el-avatar :size="36" :src="kfConfig.avator"></el-avatar>
                 <div class="topbar-main">
-                    <div class="topbar-title">永利客服小微</div>
+                    <div class="topbar-title">線上客服</div>
                     <div class="topbar-subtitle"><{kfConfig.displayName || kfConfig.name || '坐席'}> - <{connectionLabel}></div>
                 </div>
                 <button class="icon-action" type="button" @click="refreshVisitors" title="重新整理">
@@ -816,8 +821,8 @@
                 this.sendAjax("/kefuinfo", "GET", {}, function (data) {
                     var result = data.result || {};
                     _this.kfConfig.id = result.username || result.name || "";
-                    _this.kfConfig.name = "永利客服小微";
-                    _this.kfConfig.displayName = "永利客服小微";
+                    _this.kfConfig.name = "線上客服";
+                    _this.kfConfig.displayName = "線上客服";
                     _this.kfConfig.avator = result.avator || "";
                     _this.initConn();
                 });
@@ -875,6 +880,10 @@
                 if (this.socket.readyState === 1) {
                     this.setConnectionState("online");
                     this.sendKefuOnline();
+                    return;
+                }
+                if (this.socket.readyState === 0) {
+                    this.setConnectionState("reconnecting");
                     return;
                 }
                 this.setConnectionState("reconnecting");

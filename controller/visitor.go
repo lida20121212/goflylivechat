@@ -203,8 +203,10 @@ func GetVisitorMessage(c *gin.Context) {
 		item["kefu_name"] = message.KefuName
 		if message.MesType == "kefu" {
 			item["kefu_name"] = common.PublicKefuName
+			item["kefu_avator"] = common.KefuAvatar
+		} else {
+			item["kefu_avator"] = message.KefuAvator
 		}
-		item["kefu_avator"] = message.KefuAvator
 		result = append(result, item)
 
 	}

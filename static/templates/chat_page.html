@@ -2,9 +2,9 @@
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" />
-    <meta name="keywords" content="永利客服"/>
-    <meta name="description" content="永利客服"/>
-    <title>永利客服</title>
+    <meta name="keywords" content="線上客服"/>
+    <meta name="description" content="線上客服"/>
+    <title>線上客服</title>
     <link rel="stylesheet" href="/static/cdn/element-ui/2.15.1/theme-chalk/index.min.css">
     <script src="/static/cdn/vue/2.6.11/vue.min.js"></script>
     <script src="/static/cdn/element-ui/2.15.1/index.js"></script>
@@ -25,7 +25,7 @@
                 <el-avatar class="chatEntTitleLogo" :size="35" :src="kefuInfo.avatar"></el-avatar>
             </el-badge>
             <div>
-                <div>永利客服</div>
+                <div>線上客服</div>
             </div>
         </div>
         <div class="chatEntBox">
@@ -58,9 +58,11 @@
 
                     <div class="clear"></div>
                 </div>
-                <el-input show-word-limit maxlength="100" :rows="2" type="textarea" resize="none" class="visitorEditorArea" placeholder="請輸入訊息" @focus="scrollBottom;showIconBtns=false" @blur="scrollBottom;showIconBtns=false" v-model="messageContent" v-on:keyup.enter.native="chatToUser">
-                </el-input>
-                <el-button type="primary" size="mini" class="visitorEditorBtn" :disabled="sendDisabled||messageContent==''" v-on:click="chatToUser();showIconBtns=false">送出</el-button>
+                <div class="visitorComposerMain">
+                    <el-input show-word-limit maxlength="100" :autosize="{ minRows: 1, maxRows: 4 }" type="textarea" resize="none" class="visitorEditorArea" placeholder="請輸入訊息" @focus="handleEditorFocus" @blur="handleEditorBlur" v-model="messageContent" v-on:keyup.enter.native="chatToUser">
+                    </el-input>
+                    <el-button type="primary" class="visitorEditorBtn" :disabled="sendDisabled||messageContent.trim()==''" v-on:click="chatToUser();showIconBtns=false">送出</el-button>
+                </div>
             </div>
         </div>
         <div class="chatArticle">
@@ -131,7 +133,7 @@
                         return;
                     }
                     this.visitor.to_id=msg.id;
-                    this.showTitle("永利客服小微正在為您服務");
+                    this.showTitle("線上客服正在為您服務");
                     this.scrollBottom();
                     this.showKfonline=true;
                 }
@@ -318,6 +320,30 @@
                     $('.chatVisitorPage').scrollTop($(".chatVisitorPage")[0].scrollHeight);
                 });
             },
+            setViewportHeight:function(){
+                var height = window.innerHeight;
+                if (window.visualViewport && window.visualViewport.height) {
+                    height = window.visualViewport.height;
+                }
+                document.documentElement.style.setProperty('--vh', (height * 0.01) + 'px');
+            },
+            handleEditorFocus:function(){
+                var _this=this;
+                this.showIconBtns=false;
+                this.setViewportHeight();
+                setTimeout(function(){
+                    _this.setViewportHeight();
+                    _this.scrollBottom();
+                },300);
+            },
+            handleEditorBlur:function(){
+                var _this=this;
+                this.showIconBtns=false;
+                setTimeout(function(){
+                    _this.setViewportHeight();
+                    _this.scrollBottom();
+                },120);
+            },
             getNowDate : function() {
                 var d = new Date(new Date());
                 return d.getFullYear() + '-' + this.digit(d.getMonth() + 1) + '-' + this.digit(d.getDate())
@@ -342,12 +368,12 @@
                     var code=res.code;
                     if(code!=200) return;
                     _this.kefuInfo=res.result;
-                    _this.showTitle("永利客服小微為您服務");
+                    _this.showTitle("線上客服為您服務");
                     if(!_this.kefuInfo.welcome) return;
                     var msg={
                         content:replaceContent(_this.kefuInfo.welcome),
                         avator:_this.kefuInfo.avatar,
-                        name :"永利客服小微",
+                        name :"線上客服",
                         time:_this.getNowDate(),
                         is_kefu:true,
                     }
@@ -358,9 +384,11 @@
             },
             initCss:function(){
                 var _this=this;
+                this.setViewportHeight();
                 $(function () {
                     var windheight = $(window).height();
                     $(window).resize(function(){
+                        _this.setViewportHeight();
                         var docheight = $(window).height();
                         $('body').scrollTop(99999999);
                     });
@@ -483,14 +511,21 @@
                     url: url,
                     data:params,
                     error:function(res){
-                        var data=JSON.parse(res.responseText);
-                        console.log(data);
-                        if(data.code!=200){
-                            _this.$message({
-                                message: data.msg,
-                                type: 'error'
-                            });
+                        var data={};
+                        if(res&&res.responseText){
+                            try{
+                                data=JSON.parse(res.responseText);
+                            }catch(e){
+                                data={msg:res.statusText||"網路連線異常"};
+                            }
+                        }else{
+                            data={msg:"網路連線異常"};
                         }
+                        console.log(data);
+                        _this.$message({
+                            message: data.msg||"網路連線異常",
+                            type: 'error'
+                        });
                     },
                     success: function(data) {
                         if(data.code!=200){
@@ -512,8 +547,19 @@
             },
         },
         mounted:function() {
+            this.setViewportHeight()
             document.addEventListener('paste', this.onPasteUpload)
-            document.addEventListener('scroll',this.textareaBlur)
+            window.addEventListener('resize', this.setViewportHeight)
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', this.setViewportHeight)
+            }
+        },
+        beforeDestroy:function() {
+            document.removeEventListener('paste', this.onPasteUpload)
+            window.removeEventListener('resize', this.setViewportHeight)
+            if (window.visualViewport) {
+                window.visualViewport.removeEventListener('resize', this.setViewportHeight)
+            }
         },
         created: function () {
             this.init();

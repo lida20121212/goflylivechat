@@ -26,7 +26,7 @@ func GetNotice(c *gin.Context) {
 		"result": gin.H{
 			"welcome":   visitorNoticeText("WelcomeMessage", welcomeMessage.ConfValue),
 			"offline":   visitorNoticeText("OfflineMessage", offlineMessage.ConfValue),
-			"avatar":    user.Avator,
+			"avatar":    common.KefuAvatar,
 			"nickname":  common.PublicKefuName,
 			"allNotice": visitorNoticeText("AllNotice", allNotice.ConfValue),
 		},

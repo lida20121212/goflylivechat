@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"goflylivechat/common"
 	"goflylivechat/models"
 	"goflylivechat/tools"
 	"log"
@@ -134,7 +135,7 @@ func KefuMessage(visitorId, content string, kefuInfo models.User) {
 		Type: "message",
 		Data: ClientMessage{
 			Name:    kefuInfo.Nickname,
-			Avator:  kefuInfo.Avator,
+			Avator:  common.KefuAvatar,
 			Id:      visitorId,
 			Time:    time.Now().Format("2006-01-02 15:04:05"),
 			ToId:    visitorId,
