@@ -732,7 +732,8 @@
             transferPanel: false,
             otherKefus: [],
             pingTimer: null,
-            refreshTimer: null
+            refreshTimer: null,
+            retryTimer: null
         },
         computed: {
             activeVisitors: function () {
@@ -832,7 +833,12 @@
                 var _this = this;
                 this.server = getWsBaseUrl() + "/ws_kefu?token=" + encodeURIComponent(localStorage.getItem("token") || "");
                 this.setConnectionState("connecting");
-                this.socket = new ReconnectingWebSocket(this.server);
+                this.socket = new ReconnectingWebSocket(this.server, null, {
+                    reconnectInterval: 10000,
+                    maxReconnectInterval: 10000,
+                    reconnectDecay: 1,
+                    timeoutInterval: 10000
+                });
                 this.socket.onconnecting = function () {
                     _this.setConnectionState("reconnecting");
                 };
@@ -911,7 +917,15 @@
                 }, 20000);
                 this.refreshTimer = setInterval(function () {
                     _this.getOnlineVisitors();
-                }, 120000);
+                }, 30000);
+                if (this.retryTimer) {
+                    clearInterval(this.retryTimer);
+                }
+                this.retryTimer = setInterval(function () {
+                    if (!_this.socket || _this.socket.readyState !== 1) {
+                        _this.recoverSocket();
+                    }
+                }, 10000);
             },
             showReconnectNotice: function () {
                 var now = Date.now();
@@ -925,6 +939,16 @@
                     duration: 1800
                 });
             },
+            syncCurrentChat: function () {
+                if (!this.currentGuest) {
+                    return;
+                }
+                this.messages.page = 1;
+                this.msgList = [];
+                this.showLoadMore = false;
+                this.getHistoryMessage();
+                this.getVistorInfo(this.currentGuest);
+            },
             handleResume: function () {
                 this.setViewportHeight();
                 if (document.hidden) {
@@ -932,6 +956,7 @@
                 }
                 this.recoverSocket();
                 this.refreshVisitors();
+                this.syncCurrentChat();
             },
             handleOffline: function () {
                 this.setConnectionState("offline");
@@ -1107,7 +1132,9 @@
             getOnlineVisitors: function () {
                 var _this = this;
                 var unread = {};
+                var oldMessages = {};
                 for (var i = 0; i < this.users.length; i++) {
+                    oldMessages[this.users[i].uid] = this.users[i].last_message || "";
                     if (this.users[i].hidden_new_message === false) {
                         unread[this.users[i].uid] = true;
                     }
@@ -1115,7 +1142,11 @@
                 this.sendAjax("/visitors_kefu_online", "GET", {}, function (data) {
                     var list = data.result || [];
                     for (var j = 0; j < list.length; j++) {
-                        _this.$set(list[j], 'hidden_new_message', unread[list[j].uid] ? false : true);
+                        var uid = list[j].uid;
+                        var lastMessage = list[j].last_message || "";
+                        var changed = oldMessages[uid] && oldMessages[uid] !== lastMessage;
+                        var hasNew = unread[uid] || changed && uid !== _this.currentGuest;
+                        _this.$set(list[j], 'hidden_new_message', hasNew ? false : true);
                     }
                     _this.users = list;
                 });
@@ -1411,6 +1442,7 @@
             this.setViewportHeight();
             window.addEventListener("resize", this.setViewportHeight);
             window.addEventListener("focus", this.handleResume);
+            window.addEventListener("pageshow", this.handleResume);
             window.addEventListener("online", this.handleResume);
             window.addEventListener("offline", this.handleOffline);
             document.addEventListener("visibilitychange", this.handleResume);
@@ -1419,6 +1451,7 @@
         beforeDestroy: function () {
             window.removeEventListener("resize", this.setViewportHeight);
             window.removeEventListener("focus", this.handleResume);
+            window.removeEventListener("pageshow", this.handleResume);
             window.removeEventListener("online", this.handleResume);
             window.removeEventListener("offline", this.handleOffline);
             document.removeEventListener("visibilitychange", this.handleResume);
@@ -1428,6 +1461,9 @@
             }
             if (this.refreshTimer) {
                 clearInterval(this.refreshTimer);
+            }
+            if (this.retryTimer) {
+                clearInterval(this.retryTimer);
             }
         },
         created: function () {

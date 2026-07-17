@@ -26,6 +26,7 @@ func NewKefuServer(c *gin.Context) {
 		log.Print("upgrade:", err)
 		return
 	}
+	prepareConn(conn)
 
 	kefu := &User{
 		Conn:   conn,
@@ -45,6 +46,7 @@ func NewKefuServer(c *gin.Context) {
 			log.Println("read kefu websocket failed:", err)
 			return
 		}
+		touchConnReadDeadline(conn)
 
 		message <- &Message{
 			conn:        conn,
@@ -85,6 +87,7 @@ func writeKefuMessage(toId string, str []byte, logSend bool) bool {
 	}
 
 	kefu.Mux.Lock()
+	kefu.Conn.SetWriteDeadline(time.Now().Add(websocketWriteWait))
 	err := kefu.Conn.WriteMessage(websocket.TextMessage, str)
 	kefu.Mux.Unlock()
 	if logSend {
@@ -97,6 +100,33 @@ func writeKefuMessage(toId string, str []byte, logSend bool) bool {
 		return false
 	}
 	return true
+}
+
+func writeKefuHeartbeat(toId string, str []byte) bool {
+	kefu, ok := getKefu(toId)
+	if !ok || kefu.Conn == nil {
+		return false
+	}
+
+	kefu.Mux.Lock()
+	kefu.Conn.SetWriteDeadline(time.Now().Add(websocketWriteWait))
+	err := kefu.Conn.WriteMessage(websocket.TextMessage, str)
+	if err == nil {
+		kefu.MissedPing = 0
+		kefu.Mux.Unlock()
+		return true
+	}
+	kefu.MissedPing++
+	missed := kefu.MissedPing
+	conn := kefu.Conn
+	kefu.Mux.Unlock()
+
+	log.Println("send websocket heartbeat to kefu failed:", toId, err, "missed:", missed)
+	if missed >= kefuHeartbeatMissLimit {
+		conn.Close()
+		removeKefuConn(toId, conn)
+	}
+	return false
 }
 
 func KefuMessage(visitorId, content string, kefuInfo models.User) {
@@ -122,6 +152,6 @@ func SendPingToKefuClient() {
 	}
 	str, _ := json.Marshal(msg)
 	for _, kefuId := range kefuIDs() {
-		writeKefuMessage(kefuId, str, false)
+		writeKefuHeartbeat(kefuId, str)
 	}
 }

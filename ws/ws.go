@@ -23,6 +23,7 @@ type User struct {
 	Role_id    string
 	Mux        sync.Mutex
 	UpdateTime time.Time
+	MissedPing int
 }
 type Message struct {
 	conn        *websocket.Conn
@@ -55,6 +56,25 @@ var KefuList = make(map[string]*User)
 var message = make(chan *Message, 10)
 var upgrader = websocket.Upgrader{}
 var Mux sync.RWMutex
+
+const (
+	websocketReadWait      = 90 * time.Second
+	websocketWriteWait     = 10 * time.Second
+	kefuHeartbeatMissLimit = 3
+)
+
+func prepareConn(conn *websocket.Conn) {
+	conn.SetReadLimit(1024 * 1024)
+	touchConnReadDeadline(conn)
+	conn.SetPongHandler(func(string) error {
+		touchConnReadDeadline(conn)
+		return nil
+	})
+}
+
+func touchConnReadDeadline(conn *websocket.Conn) {
+	conn.SetReadDeadline(time.Now().Add(websocketReadWait))
+}
 
 func getVisitor(visitorId string) (*User, bool) {
 	Mux.RLock()
@@ -188,6 +208,7 @@ func writeConnMessage(conn *websocket.Conn, str []byte) error {
 		user.Mux.Lock()
 		defer user.Mux.Unlock()
 	}
+	conn.SetWriteDeadline(time.Now().Add(websocketWriteWait))
 	return conn.WriteMessage(websocket.TextMessage, str)
 }
 

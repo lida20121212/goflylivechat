@@ -25,6 +25,7 @@ func NewVisitorServer(c *gin.Context) {
 		log.Print("upgrade:", err)
 		return
 	}
+	prepareConn(conn)
 	defer conn.Close()
 
 	user := &User{
@@ -50,6 +51,7 @@ func NewVisitorServer(c *gin.Context) {
 			log.Println("read visitor websocket failed:", err)
 			return
 		}
+		touchConnReadDeadline(conn)
 
 		message <- &Message{
 			conn:        conn,
@@ -157,6 +159,7 @@ func writeVisitorMessage(visitorId string, str []byte) bool {
 	}
 
 	visitor.Mux.Lock()
+	visitor.Conn.SetWriteDeadline(time.Now().Add(websocketWriteWait))
 	err := visitor.Conn.WriteMessage(websocket.TextMessage, str)
 	visitor.Mux.Unlock()
 	if err != nil {

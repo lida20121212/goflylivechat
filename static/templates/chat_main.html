@@ -311,6 +311,10 @@
             //server:getWsBaseUrl()+"/chat_server",
             socket:null,
             socketClosed:false,
+            socketReady:false,
+            pingTimer:null,
+            refreshTimer:null,
+            retryTimer:null,
             messageContent:"",
             currentGuest:"",
             msgList:[],
@@ -368,7 +372,7 @@
                 let mes = {}
                 mes.type = "kfOnline";
                 mes.data = this.kfConfig;
-                this.socket.send(JSON.stringify(mes));
+                this.safeSocketSend(mes);
             },
             //心跳
             ping(){
@@ -376,26 +380,115 @@
                 let mes = {}
                 mes.type = "ping";
                 mes.data = "";
-                setInterval(function () {
-                    if(_this.socket!=null){
-                        _this.socket.send(JSON.stringify(mes));
-                    }
+                if(this.pingTimer){
+                    clearInterval(this.pingTimer);
+                }
+                if(this.refreshTimer){
+                    clearInterval(this.refreshTimer);
+                }
+                this.pingTimer=setInterval(function () {
+                    _this.safeSocketSend(mes);
                 },20000)
-                setInterval(function(){
+                this.refreshTimer=setInterval(function(){
                     _this.getOnlineVisitors();
-                },120000);
+                },30000);
+                if(this.retryTimer){
+                    clearInterval(this.retryTimer);
+                }
+                this.retryTimer=setInterval(function(){
+                    if(!_this.socket||_this.socket.readyState!==1){
+                        _this.recoverSocket();
+                    }
+                },10000);
             },
             //初始化websocket
             initConn() {
-                let socket = new ReconnectingWebSocket(this.server);//创建Socket实例
+                if(this.socket){
+                    return;
+                }
+                this.server=getWsBaseUrl()+"/ws_kefu?token="+localStorage.getItem("token");
+                let socket = new ReconnectingWebSocket(this.server,null,{
+                    reconnectInterval:10000,
+                    maxReconnectInterval:10000,
+                    reconnectDecay:1,
+                    timeoutInterval:10000
+                });//创建Socket实例
                 this.socket = socket
                 this.socket.onmessage = this.OnMessage;
                 this.socket.onopen = this.OnOpen;
+                this.socket.onclose = this.OnClose;
+                this.socket.onerror = this.OnError;
+                this.socket.onconnecting = this.OnConnecting;
             },
             OnOpen() {
+                this.socketReady=true;
+                this.socketClosed=false;
                 this.sendKefuOnline();
+                this.getOnlineVisitors();
+                this.syncCurrentChat();
+            },
+            OnClose() {
+                this.socketReady=false;
+                this.socketClosed=true;
+            },
+            OnError() {
+                this.socketReady=false;
+            },
+            OnConnecting() {
+                this.socketReady=false;
+            },
+            recoverSocket(){
+                if(!localStorage.getItem("token")){
+                    window.location.href="/login";
+                    return;
+                }
+                if(!this.socket){
+                    this.initConn();
+                    return;
+                }
+                if(this.socket.readyState===1){
+                    this.socketReady=true;
+                    this.sendKefuOnline();
+                    return;
+                }
+                this.socketReady=false;
+                if(typeof this.socket.refresh==="function"){
+                    this.socket.refresh();
+                }
+            },
+            safeSocketSend(payload){
+                if(!this.socket||this.socket.readyState!==1){
+                    this.recoverSocket();
+                    return false;
+                }
+                try{
+                    this.socket.send(JSON.stringify(payload));
+                    return true;
+                }catch(e){
+                    this.socketReady=false;
+                    this.recoverSocket();
+                    return false;
+                }
+            },
+            syncCurrentChat(){
+                if(!this.currentGuest){
+                    return;
+                }
+                this.messages.page=1;
+                this.msgList=[];
+                this.getHistoryMessage();
+                this.getVistorInfo(this.currentGuest);
+            },
+            handleResume(){
+                if(document.hidden){
+                    return;
+                }
+                this.recoverSocket();
+                this.getOnlineVisitors();
+                this.syncCurrentChat();
             },
             OnMessage(e) {
+                this.socketReady=true;
                 const redata = JSON.parse(e.data);
                 switch (redata.type){
                     case "close":
@@ -482,7 +575,7 @@
                 mes.type = "kfConnect";
                 this.kfConfig.to_id=guestId;
                 mes.data = this.kfConfig;
-                this.socket.send(JSON.stringify(mes));
+                this.safeSocketSend(mes);
 
                 //获取当前访客信息
                 this.getVistorInfo(guestId);
@@ -645,6 +738,12 @@
             //获取客服信息
             getOnlineVisitors(){
                 let _this=this;
+                let oldMessages={};
+                let oldUnread={};
+                for(let i=0;i<this.users.length;i++){
+                    oldMessages[this.users[i].uid]=this.users[i].last_message||"";
+                    oldUnread[this.users[i].uid]=this.users[i].hidden_new_message===false;
+                }
                 $.ajax({
                     type:"get",
                     url:"/visitors_kefu_online",
@@ -655,7 +754,11 @@
                         if(data.code==200 && data.result!=null){
                             _this.users=data.result;
                             for(var i=0;i<_this.users.length;i++){
-                                _this.$set(_this.users[i],'hidden_new_message',true);
+                                let uid=_this.users[i].uid;
+                                let lastMessage=_this.users[i].last_message||"";
+                                let changed=oldMessages[uid]&&oldMessages[uid]!==lastMessage;
+                                let hasNew=oldUnread[uid]||changed&&uid!==_this.currentGuest;
+                                _this.$set(_this.users[i],'hidden_new_message',!hasNew);
                             }
                         }
                         if(data.code!=200){
@@ -1166,6 +1269,26 @@
         },
         mounted() {
             document.addEventListener('paste', this.onPasteUpload)
+            document.addEventListener('visibilitychange', this.handleResume)
+            window.addEventListener('focus', this.handleResume)
+            window.addEventListener('pageshow', this.handleResume)
+            window.addEventListener('online', this.handleResume)
+        },
+        beforeDestroy() {
+            document.removeEventListener('paste', this.onPasteUpload)
+            document.removeEventListener('visibilitychange', this.handleResume)
+            window.removeEventListener('focus', this.handleResume)
+            window.removeEventListener('pageshow', this.handleResume)
+            window.removeEventListener('online', this.handleResume)
+            if(this.pingTimer){
+                clearInterval(this.pingTimer);
+            }
+            if(this.refreshTimer){
+                clearInterval(this.refreshTimer);
+            }
+            if(this.retryTimer){
+                clearInterval(this.retryTimer);
+            }
         },
         created: function () {
             //jquery
